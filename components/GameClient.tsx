@@ -274,7 +274,7 @@ export default function GameClient({
       )}
 
       {/* Desktop layout - normal flow */}
-      <div className="hidden sm:block w-full pb-[220px]">
+      <div className="hidden sm:block w-full pb-[220px] lg:pb-[300px]">
         {gameState.isComplete ? (
           <div className="w-full max-w-2xl mx-auto text-center text-ink font-display border border-rule bg-panel px-5 py-4">
             {gameState.isWon ? (

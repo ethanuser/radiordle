@@ -139,13 +139,13 @@ export default function GamePage({ puzzle, hints, conditions, dayNumber, isArchi
 
         {/* Main Content — mobile: the locked flex column (min-h-0 lets the hints
             region below scroll instead of pushing the input off-screen). */}
-        <div className="flex-1 min-h-0 flex flex-col items-center justify-start px-4 pt-2 pb-0 sm:pb-4 sm:pt-4">
+        <div className="flex-1 min-h-0 flex flex-col items-center justify-start px-4 pt-2 pb-0 sm:pb-4 sm:pt-4 lg:grid lg:grid-cols-[minmax(0,1fr)_minmax(440px,38vw)] lg:gap-6 lg:items-stretch lg:px-8 lg:py-5 lg:h-[calc(100dvh-60px)] lg:flex-none">
 
           {/* Medical Image Display — pinned at the top of the mobile column
               (shrink-0 keeps it full-size; it never scrolls away). */}
-          <div className="w-full max-w-3xl lg:max-w-4xl mb-3 sm:mb-6 shrink-0 pb-2">
+          <div className="w-full max-w-3xl mb-3 sm:mb-6 shrink-0 pb-2 lg:max-w-none lg:m-0 lg:p-0 lg:h-full lg:min-h-0">
             <div
-              className={`relative w-full aspect-[16/9] bg-black overflow-hidden border-2 ${imageBorderColor} transition-colors duration-300 cursor-pointer${showImagePulse ? ' animate-image-pulse' : ''}`}
+              className={`relative w-full aspect-[16/9] lg:aspect-auto lg:h-full bg-black overflow-hidden border-2 ${imageBorderColor} transition-colors duration-300 cursor-pointer${showImagePulse ? ' animate-image-pulse' : ''}`}
               onClick={() => { if (puzzle.image_url && Date.now() - zoomClosedAt.current > 300) { setZoomKey(k => k + 1); setShowZoom(true); } }}
               role="button"
               tabIndex={0}
@@ -187,9 +187,13 @@ export default function GamePage({ puzzle, hints, conditions, dayNumber, isArchi
             </div>
           </div>
 
+          {/* Report column — below the image on phones/tablets; on large
+              screens a full-height panel beside the image (same layout as
+              Game Session) that scrolls internally. */}
+          <div className="w-full flex-1 min-h-0 flex flex-col items-center lg:items-stretch lg:h-full lg:overflow-y-auto lg:border lg:border-rule lg:bg-panel lg:px-6 lg:pt-5">
           {/* Question */}
-          <div className="shrink-0 w-full max-w-2xl mx-auto flex items-end justify-between border-b border-rule-strong pb-1.5 mb-3 sm:mb-4">
-            <h2 className="text-lg sm:text-xl text-ink font-semibold font-display">
+          <div className="shrink-0 w-full max-w-2xl mx-auto flex items-end justify-between border-b border-rule-strong pb-1.5 mb-3 sm:mb-4 lg:max-w-none">
+            <h2 className="text-lg sm:text-xl lg:text-2xl text-ink font-semibold font-display">
               What&apos;s the Diagnosis?
             </h2>
             <span className="report-label">Findings</span>
@@ -201,7 +205,7 @@ export default function GamePage({ puzzle, hints, conditions, dayNumber, isArchi
               hints outgrow that space (keeping image + input fixed in frame).
               Desktop keeps its natural page-scrolling flow via the sm: resets. */}
           {visibleHints.length > 0 && (
-            <div ref={hintsScrollRef} className="w-full max-w-2xl mx-auto space-y-1.5 mb-4 sm:mb-6 flex-1 min-h-0 overflow-y-auto sm:flex-none sm:overflow-visible">
+            <div ref={hintsScrollRef} className="w-full max-w-2xl mx-auto space-y-1.5 lg:space-y-2 mb-4 sm:mb-6 flex-1 min-h-0 overflow-y-auto sm:flex-none sm:overflow-visible lg:max-w-none">
               {visibleHints.map((hint, index) => {
                 // Hints are revealed after a guess. The guess that revealed this hint is at index.
                 // To color the hint based on the NEXT guess after it was revealed, we look at index + 1.
@@ -231,7 +235,7 @@ export default function GamePage({ puzzle, hints, conditions, dayNumber, isArchi
                       <span className="flex-shrink-0 pt-0.5 font-mono text-sm text-ink-muted">
                         {String(index + 1).padStart(2, '0')}
                       </span>
-                      <p className="text-base sm:text-[17px] leading-snug">
+                      <p className="text-base sm:text-[17px] lg:text-xl leading-snug">
                         {hint.hint_text || hint.image_caption || `Hint ${index + 1}`}
                       </p>
                     </div>
@@ -253,6 +257,7 @@ export default function GamePage({ puzzle, hints, conditions, dayNumber, isArchi
             isArchive={isArchive}
             onGameStateChange={handleGameStateChange}
           />
+          </div>
         </div>
       </div>
 
