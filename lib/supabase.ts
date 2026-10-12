@@ -1,21 +1,33 @@
-import { createClient } from '@supabase/supabase-js';
+import { createClient, type SupabaseClient } from '@supabase/supabase-js';
 
 const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL;
 const supabaseAnonKey = process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY;
 
-if (!supabaseUrl) {
-  throw new Error(
-    'Missing environment variable: NEXT_PUBLIC_SUPABASE_URL. Please create a .env.local file with your Supabase credentials. See README.md for instructions.'
-  );
+/**
+ * True when the Supabase credentials were provided at build time. The static
+ * GitHub Pages build still works without them: the daily game shows a notice
+ * and Game Session falls back to the bundled supplemental cases.
+ */
+export const isSupabaseConfigured = Boolean(supabaseUrl && supabaseAnonKey);
+
+const client: SupabaseClient | null = isSupabaseConfigured
+  ? createClient(supabaseUrl!, supabaseAnonKey!)
+  : null;
+
+export class BackendNotConfiguredError extends Error {
+  constructor() {
+    super(
+      'Supabase is not configured. Set NEXT_PUBLIC_SUPABASE_URL and NEXT_PUBLIC_SUPABASE_ANON_KEY (see README.md).'
+    );
+    this.name = 'BackendNotConfiguredError';
+  }
 }
 
-if (!supabaseAnonKey) {
-  throw new Error(
-    'Missing environment variable: NEXT_PUBLIC_SUPABASE_ANON_KEY. Please create a .env.local file with your Supabase credentials. See README.md for instructions.'
-  );
+/** Returns the Supabase client, or throws BackendNotConfiguredError. */
+export function db(): SupabaseClient {
+  if (!client) throw new BackendNotConfiguredError();
+  return client;
 }
-
-export const supabase = createClient(supabaseUrl, supabaseAnonKey);
 
 export interface Puzzle {
   id: string;
@@ -67,7 +79,7 @@ export interface Condition {
 }
 
 export async function getTotalPuzzleCount(): Promise<number> {
-  const { count, error } = await supabase
+  const { count, error } = await db()
     .from('puzzles')
     .select('*', { count: 'exact', head: true });
 
@@ -80,7 +92,7 @@ export async function getTotalPuzzleCount(): Promise<number> {
 }
 
 export async function getPuzzleByNumber(puzzleNumber: number): Promise<Puzzle> {
-  const { data, error } = await supabase
+  const { data, error } = await db()
     .from('puzzles')
     .select('*')
     .eq('puzzle_number', puzzleNumber)
@@ -146,7 +158,7 @@ export function getHintsFromPuzzle(puzzle: Puzzle): Hint[] {
 }
 
 export async function getAllConditions(): Promise<Condition[]> {
-  const { data, error } = await supabase
+  const { data, error } = await db()
     .from('conditions')
     .select('*')
     .order('name', { ascending: true });
@@ -170,7 +182,7 @@ import { getDayNumber } from './gameLogic';
  * Returns null if no schedule entry exists for that day.
  */
 export async function getScheduledPuzzle(dayNumber: number): Promise<Puzzle | null> {
-  const { data, error } = await supabase
+  const { data, error } = await db()
     .from('puzzle_schedule')
     .select('puzzle_id')
     .eq('day_number', dayNumber)
@@ -190,7 +202,7 @@ export async function getScheduledPuzzle(dayNumber: number): Promise<Puzzle | nu
   }
 
   // Fetch the actual puzzle
-  const { data: puzzle, error: puzzleError } = await supabase
+  const { data: puzzle, error: puzzleError } = await db()
     .from('puzzles')
     .select('*')
     .eq('id', data.puzzle_id)
@@ -212,7 +224,7 @@ export async function getScheduledPuzzle(dayNumber: number): Promise<Puzzle | nu
  */
 export async function getNextPuzzleToSchedule(): Promise<Puzzle> {
   // First, try to get a never-shown puzzle
-  const { data: neverShown, error: neverShownError } = await supabase
+  const { data: neverShown, error: neverShownError } = await db()
     .from('puzzles')
     .select('*')
     .eq('status', 'active')
@@ -226,7 +238,7 @@ export async function getNextPuzzleToSchedule(): Promise<Puzzle> {
   }
 
   // If no never-shown puzzles, get the least recently shown
-  const { data: leastRecent, error: leastRecentError } = await supabase
+  const { data: leastRecent, error: leastRecentError } = await db()
     .from('puzzles')
     .select('*')
     .eq('status', 'active')
@@ -250,7 +262,7 @@ export async function createScheduleEntry(
   puzzleId: string,
   isManual: boolean = false
 ): Promise<void> {
-  const { error } = await supabase.from('puzzle_schedule').insert({
+  const { error } = await db().from('puzzle_schedule').insert({
     day_number: dayNumber,
     puzzle_id: puzzleId,
     is_manual: isManual,
@@ -266,7 +278,7 @@ export async function createScheduleEntry(
  * Updates the last_shown_day for a puzzle after scheduling.
  */
 export async function updatePuzzleLastShown(puzzleId: string, dayNumber: number): Promise<void> {
-  const { error } = await supabase
+  const { error } = await db()
     .from('puzzles')
     .update({ last_shown_day: dayNumber })
     .eq('id', puzzleId);
@@ -292,9 +304,11 @@ export async function getPuzzleForDay(dayNumber: number): Promise<Puzzle> {
   // 2. Pick next puzzle using selection algorithm
   const puzzle = await getNextPuzzleToSchedule();
 
-  // 3. Only save to database if today or past (not future dev testing)
+  // 3. Only save to database if today or past (not future dev testing), and
+  //    only from a server. The static GitHub Pages build runs entirely in the
+  //    browser and treats the shared backend as read-only.
   const realToday = getDayNumber();
-  if (dayNumber <= realToday) {
+  if (dayNumber <= realToday && typeof window === 'undefined') {
     await createScheduleEntry(dayNumber, puzzle.id);
     await updatePuzzleLastShown(puzzle.id, dayNumber);
   }
@@ -334,8 +348,10 @@ export interface GameResultOutput {
  * Returns whether this is the first person to solve this puzzle.
  */
 export async function submitGameResult(result: GameResultInput): Promise<GameResultOutput> {
+  if (!isSupabaseConfigured) return { isFirstSolver: false };
+
   // Check if anyone has already solved this puzzle (won = true)
-  const { count, error: countError } = await supabase
+  const { count, error: countError } = await db()
     .from('game_results')
     .select('*', { count: 'exact', head: true })
     .eq('puzzle_number', result.puzzle_number)
@@ -344,7 +360,7 @@ export async function submitGameResult(result: GameResultInput): Promise<GameRes
   const isFirstSolver = result.won && !countError && count === 0;
 
   // Insert the new game result
-  const { error } = await supabase
+  const { error } = await db()
     .from('game_results')
     .insert({
       puzzle_number: result.puzzle_number,
@@ -390,9 +406,10 @@ export interface GlobalStats {
  * Used to compare individual performance against the community.
  */
 export async function getGlobalStats(): Promise<GlobalStats | null> {
+  if (!isSupabaseConfigured) return null;
   try {
     // Get overall stats
-    const { data: overall, error: overallError } = await supabase
+    const { data: overall, error: overallError } = await db()
       .from('game_stats_overall')
       .select('*')
       .single();
@@ -403,7 +420,7 @@ export async function getGlobalStats(): Promise<GlobalStats | null> {
     }
 
     // Get guess distribution
-    const { data: distribution, error: distError } = await supabase
+    const { data: distribution, error: distError } = await db()
       .from('game_stats_guess_distribution')
       .select('*');
 
@@ -478,13 +495,14 @@ export function calculatePercentileBeat(
 export async function getPuzzleGuessDistribution(
   puzzleNumber: number
 ): Promise<{ distribution: { [key: number]: number }; totalAttempts: number } | null> {
+  if (!isSupabaseConfigured) return null;
   try {
     const [distResult, statsResult] = await Promise.all([
-      supabase
+      db()
         .from('game_stats_guess_distribution_by_puzzle')
         .select('guess_count, wins')
         .eq('puzzle_number', puzzleNumber),
-      supabase
+      db()
         .from('game_stats_by_puzzle')
         .select('times_played')
         .eq('puzzle_number', puzzleNumber)
@@ -539,4 +557,27 @@ export function calculatePuzzlePercentile(
   }
 
   return Math.round((worseThanUser / totalPlayers) * 100);
+}
+
+// ============================================
+// Game Session (teaching) queries
+// ============================================
+
+/**
+ * Fetches every non-draft puzzle in the library. Game Session filters these
+ * client-side by diagnosis and release status.
+ */
+export async function getSessionPuzzles(): Promise<Puzzle[]> {
+  const { data, error } = await db()
+    .from('puzzles')
+    .select('*')
+    .neq('status', 'draft')
+    .order('puzzle_number', { ascending: true });
+
+  if (error) {
+    console.error('Error getting session puzzles:', error);
+    throw error;
+  }
+
+  return data || [];
 }

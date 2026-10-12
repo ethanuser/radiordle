@@ -77,7 +77,7 @@ test.describe('Network Failure Handling', () => {
     await page.getByRole('button', { name: 'Submit' }).first().click();
 
     // Game should still show the win modal even though submitGameResult failed
-    await expect(page.getByText('Congratulations!').first()).toBeVisible({ timeout: 5000 });
+    await expect(page.getByText('Correct — Impression').first()).toBeVisible({ timeout: 5000 });
 
     // Stats should still be saved locally
     const stats = await page.evaluate(() => {

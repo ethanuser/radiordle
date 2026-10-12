@@ -27,7 +27,7 @@ test.describe('Multi-Day Progression', () => {
 
     // Win today's game
     await submitGuess(page, correctAnswer);
-    await expect(page.getByText('Congratulations!').first()).toBeVisible({ timeout: 3000 });
+    await expect(page.getByText('Correct — Impression').first()).toBeVisible({ timeout: 3000 });
 
     // Check localStorage has a day-specific key
     const gameKeys = await page.evaluate(() => {
@@ -59,7 +59,7 @@ test.describe('Multi-Day Progression', () => {
 
     // Win a game
     await submitGuess(page, correctAnswer);
-    await expect(page.getByText('Congratulations!').first()).toBeVisible({ timeout: 3000 });
+    await expect(page.getByText('Correct — Impression').first()).toBeVisible({ timeout: 3000 });
 
     // Check stats
     const stats = await page.evaluate(() => {
@@ -96,7 +96,7 @@ test.describe('Multi-Day Progression', () => {
       await makeIncorrectGuess(page, SEARCH_TERMS[i], correctAnswer);
     }
 
-    await expect(page.getByText('Game Over').first()).toBeVisible({ timeout: 3000 });
+    await expect(page.getByText('Not solved').first()).toBeVisible({ timeout: 3000 });
 
     // Check that streak is broken
     const stats = await page.evaluate(() => {
@@ -118,7 +118,7 @@ test.describe('Multi-Day Progression', () => {
     await makeIncorrectGuess(page, SEARCH_TERMS[1], correctAnswer);
     await submitGuess(page, correctAnswer);
 
-    await expect(page.getByText('Congratulations!').first()).toBeVisible({ timeout: 3000 });
+    await expect(page.getByText('Correct — Impression').first()).toBeVisible({ timeout: 3000 });
 
     // Check guess distribution
     const stats = await page.evaluate(() => {
@@ -137,7 +137,7 @@ test.describe('Multi-Day Progression', () => {
     await waitForGameLoad(page);
     const todayAnswer = await extractCorrectAnswer(page);
     await submitGuess(page, todayAnswer);
-    await expect(page.getByText('Congratulations!').first()).toBeVisible({ timeout: 3000 });
+    await expect(page.getByText('Correct — Impression').first()).toBeVisible({ timeout: 3000 });
 
     // Verify initial stats
     let stats = await page.evaluate(() => {
@@ -148,7 +148,7 @@ test.describe('Multi-Day Progression', () => {
 
     // Now play an archive game (separate stats)
     await page.goto('/archive');
-    const archiveLinks = page.locator('a[href^="/archive/"]');
+    const archiveLinks = page.locator('a[href^="/archive/play"]');
     const linkCount = await archiveLinks.count();
 
     if (linkCount > 0) {
@@ -161,7 +161,7 @@ test.describe('Multi-Day Progression', () => {
 
       const archiveAnswer = await extractCorrectAnswer(page);
       await submitGuess(page, archiveAnswer);
-      await expect(page.getByText('Congratulations!').first()).toBeVisible({ timeout: 3000 });
+      await expect(page.getByText('Correct — Impression').first()).toBeVisible({ timeout: 3000 });
 
       // Daily stats should still be 1 game (archive doesn't count)
       stats = await page.evaluate(() => {
@@ -184,7 +184,7 @@ test.describe('Multi-Day Progression', () => {
 
     // Win the game
     await submitGuess(page, correctAnswer);
-    await expect(page.getByText('Congratulations!').first()).toBeVisible({ timeout: 3000 });
+    await expect(page.getByText('Correct — Impression').first()).toBeVisible({ timeout: 3000 });
 
     // Check that lastPlayedDay is set
     const stats = await page.evaluate(() => {

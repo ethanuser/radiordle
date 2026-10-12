@@ -7,9 +7,8 @@ import { MAX_GUESSES } from '@/lib/gameLogic';
  * Results and Stats modals (design foundation: radiordle-modals.jsx
  * `Distribution`).
  *
- * Dark glass track with a filled bar per guess count. The bar for the current
- * winning guess is highlighted in success green; the rest are a neutral white
- * wash. Bars fill via the existing `animate-bar-fill` keyframe with a small
+ * Flat track with a filled bar per guess count. The bar for the current
+ * winning guess is highlighted in success green; the rest are neutral grey. Bars fill via the existing `animate-bar-fill` keyframe with a small
  * per-row stagger — a one-shot paint, no continuous animation.
  */
 interface GuessDistributionProps {
@@ -30,18 +29,18 @@ export default function GuessDistribution({ distribution, highlight }: GuessDist
 
         return (
           <div key={guessNum} className="flex items-center gap-2">
-            <span className="w-4 text-sm font-semibold text-white/60">{guessNum}</span>
-            <div className="flex-1 h-6 rounded overflow-hidden bg-white/[0.08]">
+            <span className="w-4 text-sm font-mono text-ink-muted">{guessNum}</span>
+            <div className="flex-1 h-6 overflow-hidden bg-surface border border-rule">
               <div
-                className={`h-full rounded flex items-center justify-end px-2 animate-bar-fill ${
-                  count > 0 ? (isHighlight ? 'bg-success' : 'bg-white/[0.32]') : 'bg-transparent'
+                className={`h-full flex items-center justify-end px-2 animate-bar-fill ${
+                  count > 0 ? (isHighlight ? 'bg-success' : 'bg-[#55555a]') : 'bg-transparent'
                 }`}
                 style={{
                   width: `${Math.max(pct, count > 0 ? 10 : 0)}%`,
                   animationDelay: `${(guessNum - 1) * 0.08}s`,
                 }}
               >
-                {count > 0 && <span className="text-white text-sm font-bold">{count}</span>}
+                {count > 0 && <span className="text-white text-sm font-mono font-semibold">{count}</span>}
               </div>
             </div>
           </div>

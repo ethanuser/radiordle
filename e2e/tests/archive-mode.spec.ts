@@ -24,7 +24,7 @@ test.describe('Archive Mode', () => {
     await expect(page.getByText('Play any past puzzle!')).toBeVisible();
 
     // Verify days are listed as grid links
-    const dayLinks = page.locator('a[href^="/archive/"], a[href="/"]').filter({
+    const dayLinks = page.locator('a[href^="/archive/play"], a[href="/"]').filter({
       has: page.locator('.font-bold'),
     });
     const count = await dayLinks.count();
@@ -38,7 +38,7 @@ test.describe('Archive Mode', () => {
     await page.goto('/archive');
 
     // Unplayed days use bg-surface styling (no success/error color)
-    const dayLinks = page.locator('a[href^="/archive/"]');
+    const dayLinks = page.locator('a[href^="/archive/play"]');
     const count = await dayLinks.count();
     expect(count).toBeGreaterThan(0);
 
@@ -51,7 +51,7 @@ test.describe('Archive Mode', () => {
     await page.goto('/archive');
 
     // Find archive links (not the TODAY link which goes to /)
-    const archiveLinks = page.locator('a[href^="/archive/"]');
+    const archiveLinks = page.locator('a[href^="/archive/play"]');
     const linkCount = await archiveLinks.count();
 
     if (linkCount === 0) {
@@ -68,7 +68,7 @@ test.describe('Archive Mode', () => {
 
   test('should use separate stats for archive games', async ({ page }) => {
     await page.goto('/archive');
-    const archiveLinks = page.locator('a[href^="/archive/"]');
+    const archiveLinks = page.locator('a[href^="/archive/play"]');
     const linkCount = await archiveLinks.count();
 
     if (linkCount === 0) {
@@ -87,7 +87,7 @@ test.describe('Archive Mode', () => {
 
     // Win the archive game
     await submitGuess(page, correctAnswer);
-    await expect(page.getByText('Congratulations!').first()).toBeVisible({ timeout: 3000 });
+    await expect(page.getByText('Correct — Impression').first()).toBeVisible({ timeout: 3000 });
 
     // Check that archive stats are separate from daily stats
     const archiveStats = await page.evaluate(() => {
@@ -112,7 +112,7 @@ test.describe('Archive Mode', () => {
 
   test('should show WON badge after completing archive game', async ({ page }) => {
     await page.goto('/archive');
-    const archiveLinks = page.locator('a[href^="/archive/"]');
+    const archiveLinks = page.locator('a[href^="/archive/play"]');
     const linkCount = await archiveLinks.count();
 
     if (linkCount === 0) {
@@ -129,7 +129,7 @@ test.describe('Archive Mode', () => {
 
     const correctAnswer = await extractCorrectAnswer(page);
     await submitGuess(page, correctAnswer);
-    await expect(page.getByText('Congratulations!').first()).toBeVisible({ timeout: 3000 });
+    await expect(page.getByText('Correct — Impression').first()).toBeVisible({ timeout: 3000 });
 
     // Navigate back to archive
     await page.goto('/archive');

@@ -3,73 +3,22 @@
 import { CSSProperties } from 'react';
 
 /**
- * Ambient page background — the "Classic" annotated DICOM/PACS treatment from
- * the redesign prototype (radiordle-core.jsx `PageBackground`, `bg='annotated'`).
- * A subtle PACS overlay (side rails by the R / L markers, corner metadata,
- * couch curve, scale ruler) over a dark radial base, finished with film grain +
- * a center-focusing vignette.
+ * Page background — a flat, neutral PACS reading-room backdrop. Near-black
+ * base with crisp grey DICOM/PACS annotations (side rails by the R / L
+ * markers, corner metadata, couch curve, scale ruler). No color cast, glow,
+ * grain or vignette: annotations are drawn at fixed, legible contrast.
  *
- * Purely decorative: pointer-events-none, aria-hidden. The whole thing renders
- * as a single static paint — no blur filters, no animation, no promoted layers —
- * so the background stays cheap and never re-rasterizes. Sizing/position values
- * that differed between the prototype's desktop and mobile frames are expressed
- * here as responsive Tailwind classes.
+ * Purely decorative: pointer-events-none, aria-hidden, a single static paint.
  */
 
-const MONO = 'ui-monospace, SFMono-Regular, Menlo, Consolas, monospace';
-const RADBG =
-  'radial-gradient(120% 100% at 50% 34%, #0f1c3a 0%, #0a1226 60%, #070c18 100%)';
+const MONO = 'var(--font-plex-mono), ui-monospace, SFMono-Regular, Menlo, Consolas, monospace';
+const BASE = 'var(--color-page-bg)';
 
-// Teal glow as a full-height vertical column down the middle of the screen: an
-// even, uniform shade across the middle that fans out only at the left/right
-// ends (a flat "plateau" rather than a single bright center line), composited
-// over the base behind the PACS annotations. Static — no blur, no animation.
-const TEAL_GLOW =
-  'linear-gradient(90deg, transparent 8%, rgba(90,157,134,0.085) 42%, rgba(90,157,134,0.085) 58%, transparent 92%)';
-
-// --- DICOM/PACS overlay brightness ---------------------------------------
-// Single knob for how strongly the annotation lines & text read against the
-// dark background (the vignette darkens the corners where most of them sit, so
-// they need a little lift). 1.0 = original prototype (dim). Presets to try:
-//   1.6 = medium · 2.1 = bright · 2.7 = brightest
-const DICOM_INTENSITY = 1.6;
-
-const lift = (alpha: number) => Math.min(alpha * DICOM_INTENSITY, 1);
-const META_COLOR = `rgba(170, 200, 255, ${lift(0.17)})`;
-const ORIENT_COLOR = `rgba(170, 200, 255, ${lift(0.22)})`;
-const RAIL_COLOR = `rgba(150, 185, 255, ${lift(0.1)})`;
-const CURVE_COLOR = `rgba(160, 195, 255, ${lift(0.22)})`;
-const TICK = `rgba(160, 195, 255, ${lift(0.2)})`;
-
-// Fine film grain — the detail that separates premium dark UIs from flat ones.
-function Grain({ opacity = 0.05 }: { opacity?: number }) {
-  const n = encodeURIComponent(
-    "<svg xmlns='http://www.w3.org/2000/svg' width='180' height='180'><filter id='n'><feTurbulence type='fractalNoise' baseFrequency='0.8' numOctaves='2' stitchTiles='stitch'/><feColorMatrix type='saturate' values='0'/></filter><rect width='100%' height='100%' filter='url(%23n)'/></svg>"
-  );
-  return (
-    <div
-      className="absolute inset-0"
-      style={{
-        backgroundImage: `url("data:image/svg+xml,${n}")`,
-        backgroundSize: '180px 180px',
-        opacity,
-        mixBlendMode: 'overlay',
-      }}
-    />
-  );
-}
-
-// Center-focusing vignette so content stays legible over any texture.
-function Vignette({ strength = 0.5 }: { strength?: number }) {
-  return (
-    <div
-      className="absolute inset-0"
-      style={{
-        background: `radial-gradient(ellipse 115% 90% at 50% 42%, transparent 46%, rgba(3,6,15,${strength}) 100%)`,
-      }}
-    />
-  );
-}
+const META_COLOR = 'rgba(255, 255, 255, 0.34)';
+const ORIENT_COLOR = 'rgba(255, 255, 255, 0.5)';
+const RAIL_COLOR = 'rgba(255, 255, 255, 0.16)';
+const CURVE_COLOR = 'rgba(255, 255, 255, 0.24)';
+const TICK = 'rgba(255, 255, 255, 0.3)';
 
 export default function PageBackground() {
   // Constant portions of the corner-metadata / orientation styles (font size is
@@ -94,7 +43,7 @@ export default function PageBackground() {
     <div
       aria-hidden="true"
       className="absolute sm:fixed inset-0 overflow-hidden pointer-events-none"
-      style={{ background: `${TEAL_GLOW}, ${RADBG}` }}
+      style={{ background: BASE }}
     >
       {/* Side rails flanking the R / L orientation markers */}
       <div className="absolute top-[6%] bottom-[6%] w-px" style={{ left: '5%', background: RAIL_COLOR }} />
@@ -163,9 +112,6 @@ export default function PageBackground() {
           }}
         />
       ))}
-
-      <Grain opacity={0.05} />
-      <Vignette strength={0.5} />
     </div>
   );
 }

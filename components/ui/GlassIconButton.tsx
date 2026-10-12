@@ -4,12 +4,9 @@ import Link from 'next/link';
 import { ReactNode } from 'react';
 
 /**
- * GlassIconButton — a square, icon-only control used across the navbar and
- * modals (design foundation: radiordle-core.jsx `GlassIconButton`).
- *
- * Transparent by default, a soft white wash on hover. Renders as a Next
- * `<Link>` when `href` is given, otherwise a `<button>`. Colors/hover come
- * from Tailwind utilities (no per-frame JS state), keeping it a static paint.
+ * GlassIconButton — a square, icon-only control used in the navbar and
+ * modals. Transparent by default; a hairline border and faint fill on hover.
+ * Renders as a Next `<Link>` when `href` is given, otherwise a `<button>`.
  */
 interface GlassIconButtonProps {
   children: ReactNode;
@@ -24,13 +21,13 @@ interface GlassIconButtonProps {
 }
 
 const BASE =
-  'flex items-center justify-center rounded-xl transition-colors ' +
-  'text-white/80 hover:text-white hover:bg-white/10';
+  'flex items-center justify-center border border-transparent transition-colors ' +
+  'text-ink-muted hover:text-ink hover:border-rule hover:bg-surface';
 
 export default function GlassIconButton({
   children,
   label,
-  size = 44,
+  size = 36,
   href,
   onClick,
   className = '',

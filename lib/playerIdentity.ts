@@ -47,34 +47,12 @@ function setCookieJS(value: string): void {
 }
 
 /**
- * Sets cookie via HTTP header (Safari ITP compatible).
- * This makes the cookie "server-side" which Safari respects more.
- */
-async function setCookieHTTP(value: string): Promise<boolean> {
-  try {
-    const response = await fetch('/api/set-player-id', {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ playerId: value }),
-    });
-    return response.ok;
-  } catch (error) {
-    console.error('Error setting cookie via HTTP:', error);
-    return false;
-  }
-}
-
-/**
- * Sets cookie using both methods for maximum compatibility.
- * - HTTP method for Safari ITP
- * - JS method as immediate fallback
+ * Sets the player ID cookie. (The Vercel build also set it via an HTTP
+ * response for Safari ITP; the static GitHub Pages build has no server, so
+ * IndexedDB remains the longer-lived backup there.)
  */
 async function setCookie(value: string): Promise<void> {
-  // Set via JS immediately (works on all browsers)
   setCookieJS(value);
-
-  // Also set via HTTP for Safari ITP compatibility (fire and forget)
-  setCookieHTTP(value).catch(() => {});
 }
 
 function getCookie(): string | null {
@@ -229,7 +207,7 @@ function getLocalStorage(): string | null {
  */
 export async function storePlayerHash(hash: string): Promise<void> {
   setLocalStorage(hash);
-  await setCookie(hash); // Now async for HTTP call
+  await setCookie(hash);
   await setIDB(hash).catch(() => {
     // IndexedDB failure is non-fatal
   });

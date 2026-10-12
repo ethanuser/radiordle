@@ -239,7 +239,7 @@ export default function ImageZoomModal({ onClose, imageUrl, altText }: ImageZoom
 
   return (
     <div
-      className="fixed inset-0 bg-black/80 z-[140] animate-backdrop-fade"
+      className="fixed inset-0 bg-black/90 z-[140] animate-backdrop-fade"
       role="dialog"
       aria-modal="true"
       aria-label="Zoomed image view"
@@ -247,7 +247,7 @@ export default function ImageZoomModal({ onClose, imageUrl, altText }: ImageZoom
       {/* Close button */}
       <button
         onClick={(e) => { e.stopPropagation(); onClose(); }}
-        className="absolute top-4 right-4 z-[141] w-10 h-10 flex items-center justify-center rounded-full bg-black/50 backdrop-blur-sm text-white/80 hover:text-white hover:bg-black/70 transition-colors"
+        className="absolute top-4 right-4 z-[141] w-10 h-10 flex items-center justify-center border border-rule-strong bg-black text-ink-muted hover:text-ink transition-colors"
         aria-label="Close"
       >
         <X size={22} />
@@ -298,7 +298,7 @@ export default function ImageZoomModal({ onClose, imageUrl, altText }: ImageZoom
       {/* Usage hint — shows briefly on first few opens */}
       {showHint && (
         <div className="absolute bottom-6 left-1/2 -translate-x-1/2 z-[141] pointer-events-none animate-zoom-hint">
-          <div className="bg-black/60 backdrop-blur-sm text-white/80 text-xs px-4 py-2 rounded-full whitespace-nowrap">
+          <div className="bg-black border border-rule text-ink-muted font-mono uppercase text-[11px] px-3 py-1.5 whitespace-nowrap">
             <span className="hidden sm:inline">Scroll to zoom &middot; Drag to pan</span>
             <span className="sm:hidden">Pinch to zoom &middot; Drag to pan</span>
           </div>

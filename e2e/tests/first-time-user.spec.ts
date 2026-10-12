@@ -59,7 +59,7 @@ test.describe('First-Time User Journey', () => {
     await submitGuess(page, correctAnswer);
 
     // Verify win modal appears
-    await expect(page.getByText('Congratulations!').first()).toBeVisible({ timeout: 3000 });
+    await expect(page.getByText('Correct — Impression').first()).toBeVisible({ timeout: 3000 });
     await expect(page.getByText('The correct answer was').first()).toBeVisible();
     await expect(page.getByText(correctAnswer).first()).toBeVisible();
 
@@ -84,7 +84,7 @@ test.describe('First-Time User Journey', () => {
 
     // Win the game
     await submitGuess(page, correctAnswer);
-    await expect(page.getByText('Congratulations!').first()).toBeVisible({ timeout: 3000 });
+    await expect(page.getByText('Correct — Impression').first()).toBeVisible({ timeout: 3000 });
 
     // Refresh the page
     await page.reload();
@@ -105,7 +105,7 @@ test.describe('First-Time User Journey', () => {
 
     // Win in 1 guess
     await submitGuess(page, correctAnswer);
-    await expect(page.getByText('Congratulations!').first()).toBeVisible({ timeout: 3000 });
+    await expect(page.getByText('Correct — Impression').first()).toBeVisible({ timeout: 3000 });
 
     // The results modal (inline in GameClient) should show stats.
     // The redesigned modal has no "Statistics" heading — verify the

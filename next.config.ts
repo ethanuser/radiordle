@@ -1,42 +1,16 @@
 import type { NextConfig } from "next";
 
+// Deployed as a static site on GitHub Pages at https://ethanuser.github.io/radiordle.
+// NEXT_PUBLIC_BASE_PATH is set to "/radiordle" by the Pages workflow and left
+// empty for local development (http://localhost:3000).
+const basePath = process.env.NEXT_PUBLIC_BASE_PATH || "";
+
 const nextConfig: NextConfig = {
+  output: "export",
+  basePath,
+  trailingSlash: true,
   images: {
-    remotePatterns: [
-      {
-        protocol: 'https',
-        hostname: '**.supabase.co',
-        pathname: '/storage/v1/object/**',
-      },
-      {
-        protocol: 'https',
-        hostname: 'ycxpdwzbelkwfuylnuoe.supabase.co',
-      },
-      {
-        protocol: 'https',
-        hostname: '**.googleusercontent.com',
-      },
-      {
-        protocol: 'https',
-        hostname: 'lh3.googleusercontent.com',
-      },
-      {
-        protocol: 'https',
-        hostname: 'lh4.googleusercontent.com',
-      },
-      {
-        protocol: 'https',
-        hostname: 'lh5.googleusercontent.com',
-      },
-      {
-        protocol: 'https',
-        hostname: 'images.radiordle.org',
-      },
-      {
-        protocol: 'https',
-        hostname: 'ars.els-cdn.com',
-      },
-    ],
+    // Static export has no image optimizer; puzzle images are served as-is.
     unoptimized: true,
   },
 };

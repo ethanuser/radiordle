@@ -22,9 +22,16 @@ pnpm test:coverage        # Run tests with coverage report
 ## Architecture
 
 ### Data Flow
-- **Server Component** (`app/page.tsx`): Fetches today's puzzle using the scheduling system
+- **Static export** (`next.config.ts`: `output: 'export'`, `basePath` from `NEXT_PUBLIC_BASE_PATH`) deployed to GitHub Pages at https://ethanuser.github.io/radiordle. There are no API routes or server components that fetch data.
+- **Client loader** (`components/DailyGame.tsx`): fetches the day's puzzle + conditions from Supabase in the browser; used by `/` (today) and `/archive/play/?day=N`
 - **Client Components** (`components/GamePage.tsx`, `GameClient.tsx`): Handle game state and user interactions
 - **Local Storage** (`lib/localStorage.ts`): Persists per-day game state and statistics client-side
+- **Game Session** (`/session`, `/session/play`): teaching mode; settings live in the URL (`lib/session.ts`), cases from Supabase + `lib/supplementalCases.ts`
+- Supabase is optional at build time (`isSupabaseConfigured`); `db()` throws `BackendNotConfiguredError` when credentials are missing
+- Root-relative public assets used in `<Image>`/`<img>` must go through `withBasePath()` (`lib/paths.ts`)
+
+### Visual style
+Flat "radiology report" look: neutral near-black palette, IBM Plex Sans/Mono, square corners, no shadows/blur (enforced globally in `app/globals.css`), report-style section labels (`.report-label`). Avoid gradients, glows, emoji and rounded "game" UI.
 
 ### Key Modules
 
@@ -50,6 +57,8 @@ The game uses a schedule-based puzzle selection system instead of modulo calcula
 - Day 0 = Dec 29, 2025, Day 1 = Dec 30, 2025, etc.
 - Display: Day numbers shown to users are `dayNumber + 1` (Day 1 = first puzzle)
 
+**Note:** schedule entries are only written when `getPuzzleForDay` runs on a server. The GitHub Pages build runs in the browser and never writes `puzzle_schedule` / `last_shown_day`.
+
 **Puzzle Selection Algorithm (in priority order):**
 1. Never-shown puzzles first (`last_shown_day = -1`), sorted by `puzzle_number`
 2. Then previously-shown puzzles, sorted by `last_shown_day` ASC (least recent first)
@@ -70,7 +79,7 @@ The game uses a schedule-based puzzle selection system instead of modulo calcula
 ### Archive Feature
 
 - URL: `/archive` - Browse all past puzzles
-- URL: `/archive/[day]` - Play specific day's puzzle
+- URL: `/archive/play/?day=N` - Play specific day's puzzle (query param; static export has no dynamic routes)
 - Archive games use separate statistics (no streak tracking)
 - Per-day localStorage keys: `radiordle_game_day_0`, `radiordle_game_day_1`, etc.
 
@@ -253,13 +262,12 @@ __tests__/
   unit/
     gameLogic.test.ts                   # checkAnswer, getDayNumber, dayNumberToDate
     supabase.pure.test.ts              # getHintsFromPuzzle, calculatePercentileBeat
-    statsCalculation.test.ts           # calculateStatsFromResults (extracted from API route)
+    statsCalculation.test.ts           # calculateStatsFromResults
+    session.test.ts                    # Game Session URL encoding, case matching, sequence building
   integration/
     localStorage.test.ts              # All localStorage functions
-    api/
-      feedback.test.ts                 # POST /api/feedback
-      player-stats.test.ts             # GET /api/player-stats
-      set-player-id.test.ts            # POST/GET /api/set-player-id
+    feedback.test.ts                   # lib/feedback submitFeedback
+    playerStats.test.ts                # lib/playerStats fetchPlayerStats
   component/
     DiagnosisAutocomplete.test.tsx     # Filtering, keyboard nav, validation
     GameClient.test.tsx                # Guess flow, win/loss, persistence
@@ -288,13 +296,13 @@ __tests__/
 - **`vi.hoisted()`** is required for setting env vars and declaring mock variables — `vi.mock()` factories are hoisted above `const` declarations
 - **GameClient renders dual layouts** (desktop + mobile) — use `getAllBy*` queries and index `[0]` for the desktop input
 - **jsdom lacks `scrollIntoView`** — polyfilled as a no-op in `setup.ts`
-- **`lib/statsCalculation.ts`** was extracted from `app/api/player-stats/route.ts` to enable unit testing of streak/distribution calculation
+- **`lib/statsCalculation.ts`** is shared by `lib/playerStats.ts` (stats recovery) and its tests
 
 ### CI Pipeline
 
 GitHub Actions (`.github/workflows/ci.yml`) runs on every push to `main` and every PR:
 - **Lint & Type Check** — `pnpm lint` + `pnpm tsc --noEmit`
-- **Tests** — `pnpm test` (154 tests across 11 files)
+- **Tests** — `pnpm test`
 - **Production Build** — `pnpm build`
 
 All three jobs run in parallel. Fake Supabase env vars are set at the workflow level.
@@ -334,7 +342,7 @@ e2e/
 - **Answer extraction**: `extractCorrectAnswer()` parses the RSC flight data from `document.documentElement.innerHTML`. RSC uses escaped quotes (`\"answer\":\"...\"`) on initial page load.
 - **Archive page navigation**: Use `page.goto(href)` (full page load) instead of clicking archive links (client-side navigation) to ensure answer data is embedded in HTML.
 - **Supabase mocking**: `mockSupabaseClientCalls()` intercepts client-side REST calls to prevent real DB writes during tests.
-- **CI Workflow**: `.github/workflows/e2e.yml` — requires Supabase secrets, installs Chromium, uploads HTML report artifacts on failure.
+- **CI Workflow**: `.github/workflows/e2e.yml` — manual (`workflow_dispatch`) only; requires Supabase secrets. Note: `extractCorrectAnswer()` reads the answer from server-rendered RSC data, which no longer exists now that puzzles load client-side — it needs reworking (e.g. read the Supabase response via `page.waitForResponse`) before the E2E suite can pass.
 
 ## Dev Testing
 
@@ -367,18 +375,17 @@ Recovers player statistics from server when localStorage is cleared but cookie/I
 **Flow:**
 1. `StatsRecoveryProvider` runs on every page load (in `layout.tsx`)
 2. Checks if stats empty but backup hash exists
-3. Fetches stats from `/api/player-stats?hash=xxx`
+3. Fetches stats with `fetchPlayerStats(hash)` (browser → Supabase)
 4. Restores to localStorage, shows success toast
 
 **Key Functions:**
 - `attemptStatsRecovery()` - Auto-runs on load, session-limited
 - `forceStatsRecovery()` - Manual trigger (for future "Recover Stats" button)
 
-### Recovery API (`/api/player-stats`)
+### Stats recovery query (`lib/playerStats.ts`, formerly `/api/player-stats`)
 
 - Calculates stats from `game_results` table by `player_hash`
 - Maps puzzle_number → day_number via `puzzle_schedule` for streak calculation
-- Rate limited: 10 requests/minute per IP
 - Returns: gamesPlayed, gamesWon, streaks, guessDistribution
 
 ### Cookie Consent (`components/CookieConsent.tsx`)

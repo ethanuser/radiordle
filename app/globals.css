@@ -1,37 +1,43 @@
 @import "tailwindcss";
 
 :root {
-  --background: #ffffff;
-  --foreground: #171717;
+  --background: #0c0c0d;
+  --foreground: #ececec;
 
-  /* Semantic color tokens */
-  --color-surface: #3d4d68;
-  --color-surface-hover: #4a5b7a;
-  --color-success: #407763;
-  --color-warning: #f6d656;
-  --color-error: #9e4a4a;
-  --color-hint-default: #6b89b8;
-  --color-accent: #f59e0b;
-  --color-accent-light: #fbbf24;
-  --color-page-bg: #1a2e5a;
-  --color-page-bg-mid: #233b6e;
-  --color-page-bg-dark: #0f172a;
-  --color-modal-bg: #1e3a5f;
-  --color-footer-bg: #1a2744;
+  /* Neutral "reading room" palette — flat, low-saturation, high contrast.
+     Status colors are muted so they read like report flags, not game tiles. */
+  --color-surface: #1b1b1d;
+  --color-surface-hover: #26262a;
+  --color-success: #3f7d58;
+  --color-warning: #c9a43a;
+  --color-error: #a8473f;
+  --color-hint-default: #1b1b1d;
+  --color-accent: #ececec;
+  --color-accent-light: #ffffff;
+  --color-page-bg: #0c0c0d;
+  --color-page-bg-mid: #121214;
+  --color-page-bg-dark: #0c0c0d;
+  --color-modal-bg: #121214;
+  --color-footer-bg: #0c0c0d;
 
-  /* Softer image-border "ring" colors (result feedback on the X-ray card) */
-  --color-ring-success: #5a9d86;
-  --color-ring-warning: #e6c84f;
-  --color-ring-error: #c4736b;
+  /* Report surface tokens */
+  --color-panel: #121214;
+  --color-rule: #3a3a3e;
+  --color-rule-strong: #8a8a90;
+  --color-ink: #ececec;
+  --color-ink-muted: #a6a6ab;
+  --color-ink-faint: #707075;
 
-  /* Glass surface tokens — shared by navbar, modals, and glass primitives */
-  --glass-bg: rgba(255, 255, 255, 0.06);
-  /* Blur radius kept modest: backdrop-filter re-samples every scroll frame, and
-     cost scales with radius. 14px still reads as glass but is much cheaper than
-     the original 22px, which noticeably smooths scrolling. */
-  --glass-blur: blur(14px) saturate(140%);
-  --glass-border: 1px solid rgba(255, 255, 255, 0.14);
-  --glass-shadow: 0 8px 32px rgba(0, 0, 0, 0.38), inset 0 1px 0 rgba(255, 255, 255, 0.2);
+  /* Image-border result colors */
+  --color-ring-success: #4f9a6c;
+  --color-ring-warning: #d4b04a;
+  --color-ring-error: #c0574e;
+
+  /* Former glass tokens — now flat, opaque surfaces */
+  --glass-bg: #121214;
+  --glass-blur: none;
+  --glass-border: 1px solid #3a3a3e;
+  --glass-shadow: none;
 }
 
 @theme inline {
@@ -50,20 +56,49 @@
   --color-page-bg-dark: var(--color-page-bg-dark);
   --color-modal-bg: var(--color-modal-bg);
   --color-footer-bg: var(--color-footer-bg);
+  --color-panel: var(--color-panel);
+  --color-rule: var(--color-rule);
+  --color-rule-strong: var(--color-rule-strong);
+  --color-ink: var(--color-ink);
+  --color-ink-muted: var(--color-ink-muted);
+  --color-ink-faint: var(--color-ink-faint);
   --color-ring-success: var(--color-ring-success);
   --color-ring-warning: var(--color-ring-warning);
   --color-ring-error: var(--color-ring-error);
-  --font-sans: var(--font-inter);
-  --font-mono: ui-monospace, SFMono-Regular, Menlo, Consolas, monospace;
-  --font-baloo-2: var(--font-baloo-2);
+  --font-sans: var(--font-plex-sans);
+  --font-mono: var(--font-plex-mono), ui-monospace, SFMono-Regular, Menlo, Consolas, monospace;
+  --font-display: var(--font-plex-sans);
 }
 
-@media (prefers-color-scheme: dark) {
-  :root {
-    --background: #0a0a0a;
-    --foreground: #ededed;
-  }
+/* Report look: square corners, no shadows/glows/blur anywhere. Applied
+   globally so every legacy component (modals, toasts, buttons) follows suit. */
+*,
+*::before,
+*::after {
+  border-radius: 0 !important;
+  box-shadow: none !important;
+  text-shadow: none !important;
+  backdrop-filter: none !important;
+  -webkit-backdrop-filter: none !important;
 }
+[class*="drop-shadow"] {
+  filter: none !important;
+}
+:focus-visible {
+  outline: 2px solid var(--color-ink);
+  outline-offset: 2px;
+}
+
+/* Small uppercase monospace label used for report section headers. */
+.report-label {
+  font-family: var(--font-mono);
+  font-size: 0.72rem;
+  font-weight: 600;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+  color: var(--color-ink-muted);
+}
+
 
 /* Scale down for smaller laptop screens */
 /* Only applies below 1600px — larger screens are completely untouched */
@@ -101,28 +136,25 @@
   }
 }
 
-/* Base paint behind everything. Matches the darkest floor of PageBackground's
-   RADBG gradient (#070c18) so any sliver the decorative background doesn't cover
-   — e.g. the mobile viewport reshuffling when the keyboard opens — blends in
-   instead of flashing the near-black default body color. */
+/* Base paint behind everything — matches PageBackground so any uncovered
+   sliver (e.g. mobile keyboard reflow) blends in. */
 html {
-  background: #070c18;
+  background: var(--color-page-bg);
 }
 
 body {
-  background: #070c18;
+  background: var(--color-page-bg);
   color: var(--foreground);
-  font-family: var(--font-inter), Arial, Helvetica, sans-serif;
+  font-family: var(--font-plex-sans), Arial, Helvetica, sans-serif;
 }
 
-/* Slim glass scrollbars (design foundation) */
+/* Slim square scrollbars */
 ::-webkit-scrollbar {
   width: 8px;
   height: 8px;
 }
 ::-webkit-scrollbar-thumb {
-  background: rgba(255, 255, 255, 0.14);
-  border-radius: 8px;
+  background: #3a3a3e;
 }
 ::-webkit-scrollbar-track {
   background: transparent;
@@ -215,15 +247,8 @@ body {
 
 /* Image border pulse — brief scale bump when border first appears */
 @keyframes image-pulse {
-  0% {
-    transform: scale(1);
-  }
-  50% {
-    transform: scale(1.01);
-  }
-  100% {
-    transform: scale(1);
-  }
+  from { opacity: 0.85; }
+  to { opacity: 1; }
 }
 
 .animate-image-pulse {
@@ -232,14 +257,8 @@ body {
 
 /* Modal entrance — scale-up from 95% + fade-in */
 @keyframes modal-enter {
-  from {
-    opacity: 0;
-    transform: scale(0.95);
-  }
-  to {
-    opacity: 1;
-    transform: scale(1);
-  }
+  from { opacity: 0; }
+  to { opacity: 1; }
 }
 
 .animate-modal-enter {

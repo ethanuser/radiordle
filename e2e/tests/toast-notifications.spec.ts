@@ -34,7 +34,7 @@ test.describe('Toast Notifications', () => {
     // Check for incorrect/partial message
     const toastText = await toast.textContent();
     expect(
-      toastText?.includes('Not quite') || toastText?.includes('Close!')
+      toastText?.includes('Incorrect') || toastText?.includes('Partially correct')
     ).toBe(true);
   });
 
@@ -47,7 +47,7 @@ test.describe('Toast Notifications', () => {
     // Green toast should appear
     const toast = page.locator('[role="status"]');
     await expect(toast).toBeVisible({ timeout: 2000 });
-    await expect(toast).toContainText('Correct!');
+    await expect(toast).toContainText('Correct');
 
     // Should have success background (design token)
     await expect(toast).toHaveClass(/bg-success/);
@@ -66,9 +66,9 @@ test.describe('Toast Notifications', () => {
     const classes = await toast.getAttribute('class');
 
     // Should be either error (incorrect) or warning (partial) design token
-    if (toastText?.includes('Not quite')) {
+    if (toastText?.includes('Incorrect')) {
       expect(classes).toContain('bg-error');
-    } else if (toastText?.includes('Close!')) {
+    } else if (toastText?.includes('Partially correct')) {
       expect(classes).toContain('bg-warning');
     }
   });

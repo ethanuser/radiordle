@@ -64,37 +64,37 @@ describe('ArchiveBrowser', () => {
     render(<ArchiveBrowser />)
 
     const links = screen.getAllByRole('link')
-    expect(links[1]).toHaveAttribute('href', '/archive/1')
-    expect(links[2]).toHaveAttribute('href', '/archive/0')
+    expect(links[1]).toHaveAttribute('href', '/archive/play?day=1')
+    expect(links[2]).toHaveAttribute('href', '/archive/play?day=0')
   })
 
   it('shows success styling for won games', () => {
     render(<ArchiveBrowser />)
 
-    // Won games (day 0) have bg-success color and a checkmark SVG
+    // Won games (day 0) have a success-colored rule and a checkmark SVG
     const links = screen.getAllByRole('link')
     const wonLink = links[2] // Day 0 is last (reverse order)
-    expect(wonLink.className).toContain('bg-success')
+    expect(wonLink.className).toContain('border-l-success')
     expect(wonLink.querySelector('svg')).toBeInTheDocument()
   })
 
   it('shows error styling for lost games', () => {
     render(<ArchiveBrowser />)
 
-    // Lost games (day 1) have bg-error color and an X SVG
+    // Lost games (day 1) have an error-colored rule and an X SVG
     const links = screen.getAllByRole('link')
     const lostLink = links[1] // Day 1 is middle
-    expect(lostLink.className).toContain('bg-error')
+    expect(lostLink.className).toContain('border-l-error')
     expect(lostLink.querySelector('svg')).toBeInTheDocument()
   })
 
   it('shows default styling for unplayed games', () => {
     render(<ArchiveBrowser />)
 
-    // Unplayed games (day 2, today) have bg-surface color and no SVG icon
+    // Unplayed games (day 2, today) have a neutral rule and no SVG icon
     const links = screen.getAllByRole('link')
     const unplayedLink = links[0] // Day 2 (today) is first
-    expect(unplayedLink.className).toContain('bg-surface')
+    expect(unplayedLink.className).toContain('border-l-rule')
     expect(unplayedLink.querySelector('svg')).not.toBeInTheDocument()
   })
 

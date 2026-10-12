@@ -24,7 +24,7 @@ export default function StatsRecoveryProvider() {
 
   return (
     <div className="fixed top-4 left-1/2 -translate-x-1/2 z-[300] animate-slide-down">
-      <div className="bg-green-600 text-white px-6 py-3 rounded-lg shadow-lg flex items-center gap-3 font-baloo-2">
+      <div className="bg-panel text-ink border border-success border-l-4 px-5 py-3 flex items-center gap-3 font-display text-sm">
         <svg
           className="w-5 h-5"
           fill="none"

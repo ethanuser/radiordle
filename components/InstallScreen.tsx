@@ -3,6 +3,8 @@
 import { useState, ReactNode, CSSProperties } from 'react';
 import Image from 'next/image';
 import Link from 'next/link';
+import { Wordmark } from './TopBar';
+import { withBasePath } from '@/lib/paths';
 
 /**
  * Install (PWA) instructions screen (design foundation: radiordle-install.jsx).
@@ -19,7 +21,6 @@ import Link from 'next/link';
 
 type Browser = 'safari' | 'chrome';
 
-const AMBER_GRADIENT = 'linear-gradient(to bottom, #fbbf24, #f59e0b)';
 
 /* ---- Red hand-drawn pointer arrow ---- */
 function RedArrow({
@@ -39,7 +40,6 @@ function RedArrow({
       width={width}
       style={{
         position: 'absolute',
-        filter: 'drop-shadow(0 2px 4px rgba(0,0,0,0.55))',
         transform: `rotate(${rotate}deg)${flip ? ' scaleX(-1)' : ''}`,
         ...style,
       }}
@@ -64,7 +64,7 @@ interface Arrow {
 function Shot({ src, w, h, arrow }: { src: string; w: number; h: number; arrow?: Arrow }) {
   return (
     <div className="relative bg-black">
-      <Image src={src} alt="" width={w} height={h} className="block w-full h-auto" />
+      <Image src={withBasePath(src)} alt="" width={w} height={h} className="block w-full h-auto" />
       {arrow && <RedArrow style={arrow.style} flip={arrow.flip} rotate={arrow.rotate} width={arrow.width} />}
     </div>
   );
@@ -73,17 +73,16 @@ function Shot({ src, w, h, arrow }: { src: string; w: number; h: number; arrow?:
 /* ---- Step card ---- */
 function StepCard({ n, title, children }: { n: string; title: string; children: ReactNode }) {
   return (
-    <section className="rounded-2xl p-4 sm:p-5 bg-white/[0.05] border border-white/10">
+    <section className="p-4 sm:p-5 bg-panel border border-rule">
       <div className="flex items-center gap-3 mb-3.5">
         <span
-          className="flex items-center justify-center rounded-full font-baloo-2 font-extrabold text-black flex-shrink-0 w-[34px] h-[34px] text-[17px]"
-          style={{ background: AMBER_GRADIENT, boxShadow: '0 3px 10px rgba(245,158,11,0.4)' }}
+          className="flex items-center justify-center font-mono font-semibold text-ink border border-rule-strong flex-shrink-0 w-[30px] h-[30px] text-[14px]"
         >
           {n}
         </span>
-        <h3 className="font-baloo-2 font-extrabold text-white leading-tight text-[19px]">{title}</h3>
+        <h3 className="font-display font-semibold text-ink leading-tight text-[17px]">{title}</h3>
       </div>
-      <div className="rounded-xl overflow-hidden border border-white/[0.08]">{children}</div>
+      <div className="overflow-hidden border border-rule">{children}</div>
     </section>
   );
 }
@@ -126,12 +125,11 @@ function TabBtn({ label, icon, active, onClick }: { label: string; icon: ReactNo
     <button
       type="button"
       onClick={onClick}
-      className="flex-1 flex items-center justify-center gap-2 font-baloo-2 font-bold rounded-xl h-11 text-[15px] transition-all"
+      className="flex-1 flex items-center justify-center gap-2 font-display font-semibold uppercase tracking-[0.06em] h-10 text-[13px] transition-colors"
       style={{
-        color: active ? '#000' : 'rgba(255,255,255,0.75)',
-        background: active ? AMBER_GRADIENT : 'rgba(255,255,255,0.06)',
-        border: active ? 'none' : '1px solid rgba(255,255,255,0.12)',
-        boxShadow: active ? '0 4px 14px rgba(245,158,11,0.4)' : 'none',
+        color: active ? '#000' : 'var(--color-ink-muted)',
+        background: active ? 'var(--color-ink)' : 'transparent',
+        border: '1px solid var(--color-rule-strong)',
       }}
     >
       {icon}
@@ -150,33 +148,29 @@ export default function InstallScreen() {
         <Link
           href="/"
           aria-label="Back to game"
-          className="flex items-center justify-center rounded-xl text-white w-11 h-11 bg-white/[0.08] hover:bg-white/[0.14] border border-white/[0.12] transition-colors"
+          className="flex items-center justify-center text-ink w-10 h-10 border border-rule hover:bg-surface transition-colors"
         >
           <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.2" strokeLinecap="round" strokeLinejoin="round"><line x1="19" y1="12" x2="5" y2="12" /><polyline points="12 19 5 12 12 5" /></svg>
         </Link>
-        <Link href="/" className="flex items-center gap-1 drop-shadow-[0_4px_12px_rgba(0,0,0,0.5)]">
-          <Image src="/radle_icon.svg" alt="" width={36} height={36} className="object-contain" />
-          <span className="text-white font-baloo-2 font-extrabold tracking-tight text-[1.4rem]">Radiordle</span>
-        </Link>
+        <Wordmark compact />
         <div className="w-11" />
       </div>
 
       {/* Hero */}
       <div className="px-4 pb-2 text-center">
         <div
-          className="mx-auto mb-3 flex items-center justify-center rounded-2xl w-[62px] h-[62px]"
-          style={{ background: 'rgba(245,158,11,0.14)', border: '1px solid rgba(245,158,11,0.4)', color: '#fbbf24' }}
+          className="mx-auto mb-3 flex items-center justify-center w-[56px] h-[56px] border border-rule-strong text-ink"
         >
           <svg width="30" height="30" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M12 3v12" /><path d="m7 12 5 5 5-5" /><path d="M5 21h14" /></svg>
         </div>
-        <h2 className="text-2xl text-white font-baloo-2 font-extrabold">Install Radiordle</h2>
-        <p className="text-white/60 mt-1 font-baloo-2 text-sm px-4">
+        <h2 className="text-2xl text-ink font-display font-semibold">Install Radiordle</h2>
+        <p className="text-ink-muted mt-1 font-display text-sm px-4">
           Add Radiordle to your home screen for a full-screen, app-like experience.
         </p>
       </div>
 
       {/* Sticky tab switcher */}
-      <div className="px-4 py-4 sticky top-0 z-10" style={{ background: 'linear-gradient(to bottom,#0d1631,rgba(13,22,49,0.92) 70%,transparent)' }}>
+      <div className="px-4 py-4 sticky top-0 z-10 bg-page-bg border-b border-rule">
         <div className="flex gap-2.5">
           <TabBtn label="Safari" active={tab === 'safari'} onClick={() => setTab('safari')} icon={<svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><circle cx="12" cy="12" r="9.5" /><path d="m15.5 8.5-2 5-5 2 2-5z" fill="currentColor" stroke="none" /></svg>} />
           <TabBtn label="Chrome" active={tab === 'chrome'} onClick={() => setTab('chrome')} icon={<svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><circle cx="12" cy="12" r="9.5" /><circle cx="12" cy="12" r="3.2" /><path d="M12 8.8h8.5M8.8 13.6 4.6 6.7M15.2 13.6l-4.2 7.3" /></svg>} />
@@ -186,7 +180,7 @@ export default function InstallScreen() {
       {/* Steps (key re-mounts to replay the fade on tab switch) */}
       <div key={tab} className="px-4 pb-12 space-y-4" style={{ animation: 'fadeIn 0.25s ease-out' }}>
         {tab === 'safari' ? <SafariSteps /> : <ChromeSteps />}
-        <p className="text-white/40 text-center text-xs font-baloo-2 pt-2">
+        <p className="text-ink-faint text-center text-xs font-display pt-2">
           Once installed, open Radiordle right from your home screen — no browser bars.
         </p>
       </div>

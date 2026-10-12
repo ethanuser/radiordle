@@ -4,35 +4,23 @@ import { ReactNode, useEffect } from 'react';
 import { X } from 'lucide-react';
 
 /**
- * ModalShell — the shared dark-glass modal frame used by the Results, Stats,
- * and Feedback modals (design foundation: radiordle-modals.jsx `ModalShell`).
- *
- * Renders a dimmed backdrop + a rounded navy-gradient panel that scrolls its
- * own overflow. Clicking the backdrop closes; clicks inside the panel don't
- * propagate. Body scroll is locked while mounted (the shell only mounts when a
- * modal is open), so individual modals no longer need their own lock effect.
- *
- * Backdrop is a flat translucent black (no backdrop-blur) — a static paint,
- * kept cheap per the redesign's "prefer static over animated blur" rule.
+ * ModalShell — the shared modal frame used by the Results, Stats, and Feedback
+ * modals. A flat, square panel with a hairline border over a dimmed backdrop;
+ * the panel scrolls its own overflow. Clicking the backdrop (or Escape) closes.
+ * Body scroll is locked while mounted (the shell only mounts when open).
  */
 interface ModalShellProps {
   onClose: () => void;
   children: ReactNode;
   /** Tailwind max-width class controlling panel width (default `max-w-[460px]`). */
   maxWidthClass?: string;
-  /** Show the circular close (X) button in the top-right corner. */
+  /** Show the close (X) button in the top-right corner. */
   showClose?: boolean;
   /** Accessible label for the dialog when there's no visible labelled heading. */
   ariaLabel?: string;
   /** Optional test id applied to the backdrop element. */
   testId?: string;
 }
-
-const PANEL_STYLE = {
-  background: 'linear-gradient(to bottom, var(--color-modal-bg), var(--color-page-bg-dark))',
-  border: '1px solid rgba(255,255,255,0.12)',
-  boxShadow: '0 24px 70px rgba(0,0,0,0.6)',
-};
 
 export default function ModalShell({
   onClose,
@@ -50,18 +38,25 @@ export default function ModalShell({
     };
   }, []);
 
+  useEffect(() => {
+    const onKey = (e: KeyboardEvent) => {
+      if (e.key === 'Escape') onClose();
+    };
+    document.addEventListener('keydown', onKey);
+    return () => document.removeEventListener('keydown', onKey);
+  }, [onClose]);
+
   return (
     <div
       data-testid={testId}
-      className="fixed inset-0 z-[120] flex items-center justify-center p-4 bg-black/55 animate-backdrop-fade"
+      className="fixed inset-0 z-[120] flex items-center justify-center p-4 bg-black/75 animate-backdrop-fade"
       onClick={onClose}
     >
       <div
         role="dialog"
         aria-modal="true"
         aria-label={ariaLabel}
-        className={`relative w-full ${maxWidthClass} rounded-2xl p-5 sm:p-7 overflow-y-auto max-h-[92vh] font-baloo-2 animate-modal-enter`}
-        style={PANEL_STYLE}
+        className={`relative w-full ${maxWidthClass} p-5 sm:p-7 overflow-y-auto max-h-[92vh] font-display text-ink bg-panel border border-rule-strong animate-modal-enter`}
         onClick={(e) => e.stopPropagation()}
       >
         {showClose && (
@@ -69,9 +64,9 @@ export default function ModalShell({
             type="button"
             onClick={onClose}
             aria-label="Close"
-            className="absolute top-3.5 right-3.5 z-10 flex items-center justify-center w-[34px] h-[34px] rounded-full text-white/70 hover:text-white bg-white/[0.06] hover:bg-white/[0.14] border border-white/[0.12] transition-colors"
+            className="absolute top-3 right-3 z-10 flex items-center justify-center w-8 h-8 text-ink-muted hover:text-ink border border-rule hover:border-rule-strong transition-colors"
           >
-            <X size={18} />
+            <X size={16} />
           </button>
         )}
         {children}

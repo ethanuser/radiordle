@@ -35,7 +35,7 @@ test.describe('Losing Game Flow', () => {
     }
 
     // Verify Game Over modal appears
-    await expect(page.getByText('Game Over').first()).toBeVisible({ timeout: 3000 });
+    await expect(page.getByText('Not solved').first()).toBeVisible({ timeout: 3000 });
 
     // Verify correct answer is shown
     await expect(page.getByText('The correct answer was').first()).toBeVisible();
@@ -66,7 +66,7 @@ test.describe('Losing Game Flow', () => {
     await makeIncorrectGuess(page, SEARCH_TERMS[4], correctAnswer);
 
     // Game should be over - modal appears
-    await expect(page.getByText('Game Over').first()).toBeVisible({ timeout: 3000 });
+    await expect(page.getByText('Not solved').first()).toBeVisible({ timeout: 3000 });
   });
 
   test('should not allow more guesses after game over', async ({ page }) => {
@@ -82,14 +82,14 @@ test.describe('Losing Game Flow', () => {
     }
 
     // Close the game over modal
-    await expect(page.getByText('Game Over').first()).toBeVisible({ timeout: 3000 });
+    await expect(page.getByText('Not solved').first()).toBeVisible({ timeout: 3000 });
     await page.getByRole('button', { name: 'Close' }).first().click();
 
     // The input field should no longer be visible (game complete state)
     await expect(page.getByPlaceholder('Diagnosis...').first()).not.toBeVisible();
 
     // Instead, "Game Over" message and "View Results" button should show
-    await expect(page.getByText('Game Over. The answer was:').first()).toBeVisible();
+    await expect(page.getByText('Not solved — Impression').first()).toBeVisible();
     await expect(page.getByRole('button', { name: 'View Results' }).first()).toBeVisible();
   });
 
@@ -106,7 +106,7 @@ test.describe('Losing Game Flow', () => {
     }
 
     // Modal should be visible with stats
-    await expect(page.getByText('Game Over').first()).toBeVisible({ timeout: 3000 });
+    await expect(page.getByText('Not solved').first()).toBeVisible({ timeout: 3000 });
 
     const modal = page.locator('[data-testid="results-modal"]');
 

@@ -136,8 +136,8 @@ describe('GameClient', () => {
 
       render(<GameClient {...defaultProps} />)
 
-      // Modal heading + desktop/mobile all show "Congratulations"
-      const congratsElements = screen.getAllByText(/Congratulations/)
+      // Desktop/mobile completion blocks show the "Correct — Impression" label
+      const congratsElements = screen.getAllByText(/Correct — Impression/)
       expect(congratsElements.length).toBeGreaterThan(0)
     })
 
@@ -168,7 +168,7 @@ describe('GameClient', () => {
       expect(screen.getAllByText('Pneumothorax').length).toBeGreaterThan(0)
     })
 
-    it('shows "Game Over" on loss', () => {
+    it('shows "Not solved" on loss', () => {
       const lostState = {
         dayNumber: 5,
         guesses: ['A', 'B', 'C', 'D', 'E'],
@@ -182,7 +182,7 @@ describe('GameClient', () => {
 
       render(<GameClient {...defaultProps} />)
 
-      const gameOverElements = screen.getAllByText(/Game Over/)
+      const gameOverElements = screen.getAllByText(/Not solved/)
       expect(gameOverElements.length).toBeGreaterThan(0)
     })
 

@@ -21,6 +21,7 @@ import {
 } from '@/lib/localStorage';
 import { getOrCreatePlayerHash } from '@/lib/playerIdentity';
 import { submitGameResult } from '@/lib/supabase';
+import { SITE_URL } from '@/lib/paths';
 
 // Toast feedback types
 type ToastType = 'correct' | 'partial' | 'incorrect' | 'copied' | null;
@@ -49,28 +50,28 @@ interface GameClientProps {
 // Toast configuration for different result types
 const TOAST_CONFIG: Record<Exclude<ToastType, null>, ToastConfig> = {
   correct: {
-    message: 'Correct!',
+    message: 'Correct',
     bgColor: 'bg-success',
     textColor: 'text-white',
     icon: '✓',
   },
   partial: {
-    message: "Close! You're on the right track",
+    message: 'Partially correct',
     bgColor: 'bg-warning',
     textColor: 'text-black',
     icon: '◐',
   },
   incorrect: {
-    message: 'Not quite - try again',
+    message: 'Incorrect',
     bgColor: 'bg-error',
     textColor: 'text-white',
     icon: '✗',
   },
   copied: {
-    message: 'Results copied to clipboard!',
-    bgColor: 'bg-blue-600',
-    textColor: 'text-white',
-    icon: '📋',
+    message: 'Results copied to clipboard',
+    bgColor: 'bg-ink',
+    textColor: 'text-black',
+    icon: '⧉',
   },
 };
 
@@ -298,12 +299,12 @@ export default function GameClient({
         <div
           role="status"
           aria-live="polite"
-          className={`fixed top-20 left-1/2 z-[200] px-6 py-3 rounded-lg shadow-lg
+          className={`fixed top-20 left-1/2 z-[200] px-5 py-2.5 border border-black/30
             ${TOAST_CONFIG[toast].bgColor} ${TOAST_CONFIG[toast].textColor}
             animate-toast-in
-            font-baloo-2 font-semibold text-lg flex items-center gap-2`}
+            font-mono font-semibold text-sm uppercase tracking-[0.08em] flex items-center gap-2`}
         >
-          <span className="text-xl">{TOAST_CONFIG[toast].icon}</span>
+          <span className="text-base">{TOAST_CONFIG[toast].icon}</span>
           {TOAST_CONFIG[toast].message}
         </div>
       )}
@@ -311,21 +312,21 @@ export default function GameClient({
       {/* Desktop layout - normal flow */}
       <div className="hidden sm:block w-full pb-[220px]">
         {gameState.isComplete ? (
-          <div className="text-center text-white text-xl font-baloo-2 font-bold">
+          <div className="w-full max-w-2xl mx-auto text-center text-ink font-display border border-rule bg-panel px-5 py-4">
             {gameState.isWon ? (
               <>
-                <p>Congratulations! The answer was:</p>
-                <p className="text-2xl mt-1 text-accent">{correctAnswer}</p>
+                <p className="report-label">Correct — Impression</p>
+                <p className="text-2xl mt-1 font-semibold text-ink">{correctAnswer}</p>
               </>
             ) : (
               <>
-                <p>Game Over. The answer was:</p>
-                <p className="text-2xl mt-1 text-accent">{correctAnswer}</p>
+                <p className="report-label">Not solved — Impression</p>
+                <p className="text-2xl mt-1 font-semibold text-ink">{correctAnswer}</p>
               </>
             )}
             <button
               onClick={() => setShowModal(true)}
-              className="mt-4 px-6 py-2 bg-gradient-to-r from-accent to-accent-light hover:from-accent hover:to-accent text-black font-bold font-baloo-2 rounded-lg transition-all shadow-lg"
+              className="mt-3 px-5 py-2 bg-ink hover:bg-white text-black text-sm font-semibold uppercase tracking-[0.06em] font-display transition-colors"
             >
               View Results
             </button>
@@ -349,30 +350,29 @@ export default function GameClient({
           and the bar rides up above it, while the image stays pinned at the top. */}
       <div className="sm:hidden w-full mt-auto shrink-0">
         {gameState.isComplete ? (
-          <div className="text-center text-white text-xl font-baloo-2 font-bold pt-2 pb-[max(1rem,env(safe-area-inset-bottom))]">
+          <div className="text-center text-ink font-display border-t border-rule bg-panel px-4 pt-3 pb-[max(1rem,env(safe-area-inset-bottom))]">
             {gameState.isWon ? (
               <>
-                <p>Congratulations! The answer was:</p>
-                <p className="text-2xl mt-1 text-accent">{correctAnswer}</p>
+                <p className="report-label">Correct — Impression</p>
+                <p className="text-2xl mt-1 font-semibold text-ink">{correctAnswer}</p>
               </>
             ) : (
               <>
-                <p>Game Over. The answer was:</p>
-                <p className="text-2xl mt-1 text-accent">{correctAnswer}</p>
+                <p className="report-label">Not solved — Impression</p>
+                <p className="text-2xl mt-1 font-semibold text-ink">{correctAnswer}</p>
               </>
             )}
             <button
               onClick={() => setShowModal(true)}
-              className="mt-4 px-6 py-2 bg-gradient-to-r from-accent to-accent-light hover:from-accent hover:to-accent text-black font-bold font-baloo-2 rounded-lg transition-all shadow-lg"
+              className="mt-3 px-5 py-2 bg-ink hover:bg-white text-black text-sm font-semibold uppercase tracking-[0.06em] font-display transition-colors"
             >
               View Results
             </button>
           </div>
         ) : (
-          /* Full-bleed gradient scrim (-mx-4 cancels the parent's px-4) fades the
-             scrolling hints out behind the pill; the bottom padding lifts the bar
-             off the edge and clears the safe-area inset. */
-          <div className="-mx-4 px-4 pt-4 pb-[max(0.75rem,env(safe-area-inset-bottom))] bg-gradient-to-t from-page-bg-dark via-page-bg-dark/80 to-transparent">
+          /* Full-bleed bottom bar (-mx-4 cancels the parent's px-4); the bottom
+             padding clears the safe-area inset. */
+          <div className="-mx-4 px-4 pt-3 pb-[max(0.75rem,env(safe-area-inset-bottom))] bg-page-bg border-t border-rule">
             <DiagnosisAutocomplete
               conditions={conditions}
               onSubmit={handleSubmit}
@@ -429,8 +429,7 @@ function ResultTiles({ guesses, correctAnswer }: { guesses: string[]; correctAns
     <div className="flex justify-center gap-1.5 mb-2.5">
       {Array.from({ length: MAX_GUESSES }).map((_, i) => {
         const guess = guesses[i];
-        let background = 'rgba(255,255,255,0.05)';
-        let boxShadow: string | undefined;
+        let background = 'transparent';
         if (guess) {
           const r = checkAnswer(guess, correctAnswer);
           background =
@@ -439,13 +438,12 @@ function ResultTiles({ guesses, correctAnswer }: { guesses: string[]; correctAns
               : r === 'partial'
                 ? 'var(--color-warning)'
                 : 'var(--color-error)';
-          if (r === 'correct') boxShadow = '0 0 12px rgba(64,119,99,0.65)';
         }
         return (
           <div
             key={i}
-            className="w-[26px] h-[26px] rounded-[7px] border border-white/[0.14] transition-all"
-            style={{ background, boxShadow }}
+            className="w-[22px] h-[22px] border border-rule-strong"
+            style={{ background }}
           />
         );
       })}
@@ -459,14 +457,14 @@ function ConditionAbout({ text }: { text: string }) {
   // simple default-open state (users can toggle on any width).
   const [open, setOpen] = useState(true);
   return (
-    <div className="rounded-xl mb-4 overflow-hidden bg-white/[0.04] border border-white/[0.08]">
+    <div className="mb-4 overflow-hidden border border-rule">
       <button
         type="button"
         onClick={() => setOpen((o) => !o)}
-        className="flex items-center justify-between w-full px-4 py-2.5 text-left transition-colors hover:bg-white/[0.04]"
+        className="flex items-center justify-between w-full px-4 py-2.5 text-left transition-colors hover:bg-surface"
       >
-        <span className="font-semibold text-white/85 text-sm flex items-center gap-2">
-          <Info size={15} className="text-accent-light" />
+        <span className="report-label flex items-center gap-2">
+          <Info size={14} />
           About this condition
         </span>
         <ChevronDown
@@ -554,7 +552,7 @@ function ResultsModal({
     const fullGrid = emojiGrid + unusedBoxes;
     const displayDay = dayNumber + 1;
     const prefix = isArchive ? '🩻 Radiordle Archive Day' : '🩻 Radiordle Day';
-    return `${prefix} ${displayDay} ${isWon ? guessCount : 'X'}/${MAX_GUESSES}\n${fullGrid}\nhttps://radiordle.org`;
+    return `${prefix} ${displayDay} ${isWon ? guessCount : 'X'}/${MAX_GUESSES}\n${fullGrid}\n${SITE_URL}`;
   }, [guesses, correctAnswer, dayNumber, isWon, guessCount, isArchive]);
 
   // Copy to clipboard with a resilient fallback for iOS Safari / older browsers.
@@ -593,21 +591,17 @@ function ResultsModal({
     }
   }, [buildShareText, copyResults]);
 
-  // "How You Compare" — amber glass box with real puzzle-specific percentile.
+  // "How You Compare" — puzzle-specific percentile box.
   // Rendered on desktop (in the distribution grid) and again on mobile (below
   // the action buttons); className controls which one is visible.
   const renderCompareBox = (className: string) => (
     <div
-      className={`rounded-xl p-4 ${className}`}
-      style={{
-        background: 'linear-gradient(155deg, rgba(245,158,11,0.12), rgba(61,77,104,0.42))',
-        border: '1px solid rgba(255,255,255,0.10)',
-      }}
+      className={`p-4 border border-rule ${className}`}
     >
-      <h3 className="text-base font-bold text-white text-center mb-3">How You Compare</h3>
+      <h3 className="report-label text-center mb-3">How You Compare</h3>
       {percentileBeat !== null ? (
         <div className="text-center">
-          <p className="text-3xl font-extrabold" style={{ color: '#fbbf24' }}>
+          <p className="text-3xl font-mono font-semibold text-ink">
             Top {100 - percentileBeat}%
           </p>
           <p className="text-sm text-white/70 mt-1">
@@ -645,22 +639,17 @@ function ResultsModal({
       ariaLabel="Game results"
       testId="results-modal"
     >
-      {/* Header: title, result tiles, gradient answer */}
+      {/* Header: title, result tiles, answer */}
       <div className="text-center mb-5">
-        <h2 className="text-2xl sm:text-3xl font-bold text-white mb-3">
-          {isWon ? '🎉 Congratulations!' : '😔 Game Over'}
+        <p className="report-label mb-1">Result</p>
+        <h2 className="text-2xl sm:text-3xl font-semibold text-ink mb-3">
+          {isWon ? 'Correct' : 'Not solved'}
         </h2>
         <ResultTiles guesses={guesses} correctAnswer={correctAnswer} />
         <p className="text-sm sm:text-base text-white/55 mb-1">The correct answer was</p>
         <p
-          className="font-extrabold leading-tight text-[22px] sm:text-[27px]"
-          style={{
-            backgroundImage: 'linear-gradient(90deg, #fbbf24, #f59e0b)',
-            WebkitBackgroundClip: 'text',
-            backgroundClip: 'text',
-            color: 'transparent',
-            textWrap: 'balance',
-          }}
+          className="font-semibold leading-tight text-[22px] sm:text-[27px] text-ink"
+          style={{ textWrap: 'balance' }}
         >
           {correctAnswer}
         </p>
@@ -682,8 +671,8 @@ function ResultsModal({
 
       {/* Guess Distribution + How You Compare (side-by-side on desktop when won) */}
       <div className={isWon ? 'sm:grid sm:grid-cols-2 sm:gap-4 mb-4' : 'mb-4'}>
-        <div className="rounded-xl p-3 sm:p-4 mb-3 sm:mb-0 bg-white/[0.04] border border-white/[0.08]">
-          <h3 className="text-base font-bold text-white text-center mb-3">Guess Distribution</h3>
+        <div className="p-3 sm:p-4 mb-3 sm:mb-0 border border-rule">
+          <h3 className="report-label text-center mb-3">Guess Distribution</h3>
           <GuessDistribution
             distribution={stats.guessDistribution}
             highlight={isWon ? guessCount : null}
@@ -696,15 +685,14 @@ function ResultsModal({
       <div className="flex gap-3 mb-3">
         <button
           onClick={shareResults}
-          className="flex-1 flex items-center justify-center gap-2 px-6 py-2.5 font-bold text-black text-base rounded-xl shadow-lg transition-transform active:scale-95"
-          style={{ background: 'linear-gradient(to right, var(--color-accent), var(--color-accent-light))' }}
+          className="flex-1 flex items-center justify-center gap-2 px-6 py-2.5 font-semibold uppercase tracking-[0.06em] text-black text-sm bg-ink hover:bg-white transition-colors"
         >
           <Share2 size={17} />
           Share
         </button>
         <button
           onClick={copyResults}
-          className="flex-1 flex items-center justify-center gap-2 px-6 py-2.5 font-bold text-white/85 text-base rounded-xl transition-colors bg-white/[0.07] hover:bg-white/[0.13] border border-white/[0.14]"
+          className="flex-1 flex items-center justify-center gap-2 px-6 py-2.5 font-semibold uppercase tracking-[0.06em] text-ink text-sm transition-colors border border-rule-strong hover:bg-surface"
         >
           <Copy size={16} />
           Copy
@@ -717,8 +705,7 @@ function ResultsModal({
           href={learnLink}
           target="_blank"
           rel="noopener noreferrer"
-          className="block w-full px-6 py-2.5 font-bold text-center text-base rounded-xl shadow-lg transition-transform active:scale-95"
-          style={{ background: 'linear-gradient(to right, #8fb3e6, #6f97d6)', color: '#10203f' }}
+          className="block w-full px-6 py-2.5 font-semibold uppercase tracking-[0.06em] text-center text-sm text-ink border border-rule-strong hover:bg-surface transition-colors"
         >
           Learn More
         </a>

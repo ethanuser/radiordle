@@ -1,10 +1,9 @@
 name: E2E Tests
 
+# Runs against a live Supabase backend, so it needs the NEXT_PUBLIC_SUPABASE_*
+# repository secrets. Manual-only until those are configured.
 on:
-  push:
-    branches: [main]
-  pull_request:
-    branches: [main]
+  workflow_dispatch:
 
 concurrency:
   group: ${{ github.workflow }}-${{ github.ref }}

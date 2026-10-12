@@ -16,29 +16,6 @@ interface DiagnosisAutocompleteProps {
   total?: number;
 }
 
-// Amber Submit gradient — shares the AccentButton token wiring.
-const ACCENT_STYLE = {
-  background: 'linear-gradient(to bottom, var(--color-accent-light), var(--color-accent))',
-  boxShadow: '0 4px 14px rgba(245, 158, 11, 0.45), inset 0 1px 0 rgba(255, 255, 255, 0.4)',
-};
-
-// Input pill — a themed off-white field (cool white that sits in the navy
-// theme). Kept near-opaque with no backdrop-filter: it reads as a clean light
-// bar either way, and dropping the live blur makes the fixed mobile bar much
-// cheaper to scroll past. The border color is driven by the error state.
-const PILL_STYLE = {
-  background: 'linear-gradient(to bottom, rgba(255, 255, 255, 0.97), rgba(231, 237, 248, 0.95))',
-  boxShadow: '0 8px 24px rgba(0, 0, 0, 0.42), inset 0 1px 0 rgba(255, 255, 255, 0.7)',
-};
-
-// Dark glass dropdown panel.
-const DROPDOWN_STYLE = {
-  background: 'rgba(17, 27, 52, 0.92)',
-  backdropFilter: 'var(--glass-blur)',
-  WebkitBackdropFilter: 'var(--glass-blur)',
-  border: '1px solid rgba(255, 255, 255, 0.14)',
-};
-
 export default function DiagnosisAutocomplete({
   conditions,
   onSubmit,
@@ -250,10 +227,9 @@ export default function DiagnosisAutocomplete({
         {/* Dropdown menu — appears above on mobile, below on desktop */}
         {isOpen && filteredConditions.length > 0 && (
           <div
-            className={`absolute left-0 right-0 z-50 overflow-hidden rounded-2xl shadow-2xl ${
-              isMobile ? 'bottom-full mb-2.5' : 'top-full mt-2.5'
+            className={`absolute left-0 right-0 z-50 overflow-hidden bg-panel border border-rule-strong ${
+              isMobile ? 'bottom-full mb-1' : 'top-full mt-1'
             }`}
-            style={DROPDOWN_STYLE}
           >
             <div
               ref={dropdownRef}
@@ -268,13 +244,13 @@ export default function DiagnosisAutocomplete({
                     key={condition.id}
                     onClick={() => handleSelectOption(condition.name)}
                     disabled={isDisabled}
-                    className={`w-full text-left font-baloo-2 transition-colors border-b border-white/[0.06] last:border-b-0 ${
+                    className={`w-full text-left font-display transition-colors border-b border-rule last:border-b-0 ${
                       isMobile ? 'px-[18px] py-[11px] text-[15px]' : 'px-5 py-3 text-base'
                     } ${
-                      isDisabled ? 'cursor-not-allowed' : 'hover:bg-white/5'
-                    } ${index === selectedIndex && !isDisabled ? 'bg-white/10' : ''}`}
+                      isDisabled ? 'cursor-not-allowed' : 'hover:bg-surface'
+                    } ${index === selectedIndex && !isDisabled ? 'bg-surface-hover' : ''}`}
                   >
-                    <div className={`font-medium ${isDisabled ? 'text-white/30' : 'text-white/90'}`}>
+                    <div className={`font-medium ${isDisabled ? 'text-ink-faint' : 'text-ink'}`}>
                       {condition.name}
                       {isDisabled && (
                         <span className="ml-2 text-xs opacity-70">(Previously selected)</span>
@@ -287,7 +263,7 @@ export default function DiagnosisAutocomplete({
 
             {/* Result count indicator */}
             {filteredConditions.length === 40 && (
-              <div className="px-4 py-2 text-center text-xs text-white/45 font-baloo-2 border-t border-white/10 bg-black/20">
+              <div className="px-4 py-2 text-center text-xs text-ink-faint font-display border-t border-rule">
                 Showing first 40 results. Type more to narrow down.
               </div>
             )}
@@ -296,18 +272,17 @@ export default function DiagnosisAutocomplete({
 
         {/* Glass input pill: label · divider · input · Submit */}
         <div
-          className={`flex items-center w-full rounded-2xl border ${
-            validationError ? 'border-[rgba(196,115,107,0.85)]' : 'border-[rgba(148,163,190,0.45)]'
-          } ${isMobile ? 'gap-2.5 pl-3.5 pr-[7px] py-[7px]' : 'gap-3.5 pl-[18px] pr-2 py-2'}`}
-          style={PILL_STYLE}
+          className={`flex items-center w-full border bg-[#f2f2f0] ${
+            validationError ? 'border-error' : 'border-rule-strong'
+          } ${isMobile ? 'gap-2.5 pl-3 pr-1 py-1' : 'gap-3.5 pl-4 pr-1 py-1'}`}
         >
           {showLabel && (
             <>
-              <p className="font-baloo-2 uppercase select-none flex-shrink-0 font-bold tracking-[0.1em] text-slate-500 text-[11px] sm:text-xs">
+              <p className="font-mono uppercase select-none flex-shrink-0 font-semibold tracking-[0.1em] text-neutral-500 text-[11px] sm:text-xs">
                 Guess {current} / {total}
               </p>
               <span
-                className="flex-shrink-0 w-px bg-slate-400/40"
+                className="flex-shrink-0 w-px bg-neutral-400"
                 style={{ height: isMobile ? 22 : 26 }}
                 aria-hidden="true"
               />
@@ -324,7 +299,7 @@ export default function DiagnosisAutocomplete({
             placeholder={disabled ? 'Accept notice to play' : 'Diagnosis...'}
             aria-invalid={!!validationError}
             aria-describedby={validationError ? 'diagnosis-error' : undefined}
-            className={`flex-1 min-w-0 bg-transparent outline-none font-baloo-2 font-medium text-slate-800 placeholder-slate-400 ${
+            className={`flex-1 min-w-0 bg-transparent outline-none font-display font-medium text-neutral-900 placeholder-neutral-500 ${
               isMobile ? 'text-base' : 'text-lg'
             }`}
             autoComplete="off"
@@ -333,10 +308,9 @@ export default function DiagnosisAutocomplete({
           <button
             onClick={handleSubmit}
             disabled={disabled}
-            className={`flex items-center gap-2 font-baloo-2 font-bold flex-shrink-0 rounded-xl transition-transform active:scale-95 ${
-              isMobile ? 'px-4 py-[9px] text-[15px]' : 'px-[22px] py-[11px] text-[17px]'
-            } ${disabled ? 'bg-gray-500 text-gray-300 cursor-not-allowed' : 'text-black'}`}
-            style={disabled ? undefined : ACCENT_STYLE}
+            className={`flex items-center gap-2 font-display font-semibold uppercase tracking-[0.06em] flex-shrink-0 transition-colors ${
+              isMobile ? 'px-3.5 py-2 text-[13px]' : 'px-5 py-2.5 text-sm'
+            } ${disabled ? 'bg-neutral-500 text-neutral-300 cursor-not-allowed' : 'bg-[#141416] text-white hover:bg-black'}`}
           >
             Submit
             <Send size={isMobile ? 16 : 18} />
@@ -349,7 +323,7 @@ export default function DiagnosisAutocomplete({
         <div
           id="diagnosis-error"
           role="alert"
-          className="mt-2 px-3 py-2 rounded-lg text-[13px] font-baloo-2 flex items-center gap-2 text-[#ffd9d4] border border-[rgba(196,115,107,0.45)] bg-[rgba(196,115,107,0.18)]"
+          className="mt-2 px-3 py-2 text-[13px] font-display flex items-center gap-2 text-[#f3d2ce] border border-error bg-error/15"
         >
           <svg
             className="w-4 h-4 flex-shrink-0"

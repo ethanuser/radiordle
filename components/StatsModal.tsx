@@ -57,7 +57,8 @@ export default function StatsModal({ isOpen, onClose, stats }: StatsModalProps) 
 
   return (
     <ModalShell onClose={onClose} maxWidthClass="max-w-[460px]" ariaLabel="Your statistics">
-      <h2 className="text-2xl sm:text-3xl font-bold text-white text-center mb-5">
+      <p className="report-label text-center">Daily puzzles</p>
+      <h2 className="text-2xl sm:text-3xl font-semibold text-ink text-center mb-5">
         Your Statistics
       </h2>
 
@@ -67,8 +68,8 @@ export default function StatsModal({ isOpen, onClose, stats }: StatsModalProps) 
       </div>
 
       {/* Guess Distribution */}
-      <div className="rounded-xl p-4 mb-5 bg-white/[0.04] border border-white/[0.08]">
-        <h3 className="text-lg font-bold text-white text-center mb-3">Guess Distribution</h3>
+      <div className="p-4 mb-5 border border-rule">
+        <h3 className="report-label text-center mb-3">Guess Distribution</h3>
         {stats.gamesPlayed > 0 ? (
           <GuessDistribution distribution={stats.guessDistribution} />
         ) : (
@@ -80,17 +81,11 @@ export default function StatsModal({ isOpen, onClose, stats }: StatsModalProps) 
 
       {/* How You Compare */}
       {stats.gamesWon > 0 && (
-        <div
-          className="rounded-xl p-4 mb-5"
-          style={{
-            background: 'linear-gradient(155deg, rgba(245,158,11,0.12), rgba(61,77,104,0.42))',
-            border: '1px solid rgba(255,255,255,0.10)',
-          }}
-        >
-          <h3 className="text-base font-bold text-white text-center mb-3">How You Compare</h3>
+        <div className="p-4 mb-5 border border-rule">
+          <h3 className="report-label text-center mb-3">How You Compare</h3>
           {percentileBeat !== null ? (
             <div className="text-center">
-              <p className="text-3xl font-extrabold" style={{ color: '#fbbf24' }}>
+              <p className="text-3xl font-mono font-semibold text-ink">
                 Top {100 - percentileBeat}%
               </p>
               <p className="text-sm text-white/70 mt-1">
@@ -123,7 +118,7 @@ export default function StatsModal({ isOpen, onClose, stats }: StatsModalProps) 
       {/* Close Button */}
       <button
         onClick={onClose}
-        className="w-full px-6 py-3 font-bold text-white rounded-xl transition-colors bg-white/10 hover:bg-white/[0.16]"
+        className="w-full px-6 h-10 font-semibold uppercase tracking-[0.06em] text-sm text-ink border border-rule-strong transition-colors hover:bg-surface"
       >
         Close
       </button>

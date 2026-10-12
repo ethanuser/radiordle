@@ -101,7 +101,7 @@ export default function GamePage({ puzzle, hints, conditions, dayNumber, isArchi
   // border shows before the first guess, then transitions to the softer
   // success/warning/error ring color. Border-color only — a static paint with no
   // glow filter — so the feedback stays cheap.
-  let imageBorderColor = 'border-white/[0.12]';
+  let imageBorderColor = 'border-rule';
   if (firstGuessResult === 'correct') {
     imageBorderColor = 'border-ring-success';
   } else if (firstGuessResult === 'partial') {
@@ -148,7 +148,7 @@ export default function GamePage({ puzzle, hints, conditions, dayNumber, isArchi
               (shrink-0 keeps it full-size; it never scrolls away). */}
           <div className="w-full max-w-3xl lg:max-w-4xl mb-3 sm:mb-6 shrink-0 pb-2">
             <div
-              className={`relative w-full aspect-[16/9] bg-black rounded-lg overflow-hidden border-2 ${imageBorderColor} shadow-[0_10px_34px_rgba(0,0,0,0.5)] transition-colors duration-300 cursor-pointer${showImagePulse ? ' animate-image-pulse' : ''}`}
+              className={`relative w-full aspect-[16/9] bg-black overflow-hidden border-2 ${imageBorderColor} transition-colors duration-300 cursor-pointer${showImagePulse ? ' animate-image-pulse' : ''}`}
               onClick={() => { if (puzzle.image_url && Date.now() - zoomClosedAt.current > 300) { setZoomKey(k => k + 1); setShowZoom(true); } }}
               role="button"
               tabIndex={0}
@@ -183,17 +183,20 @@ export default function GamePage({ puzzle, hints, conditions, dayNumber, isArchi
               )}
               {/* Zoom indicator icon */}
               {puzzle.image_url && (
-                <div className="absolute bottom-3 right-3 bg-black/50 rounded-full p-1.5 text-white/80 pointer-events-none">
-                  <ZoomIn size={20} />
+                <div className="absolute bottom-2 right-2 bg-black/70 border border-rule p-1 text-ink-muted pointer-events-none">
+                  <ZoomIn size={18} />
                 </div>
               )}
             </div>
           </div>
 
           {/* Question */}
-          <h2 className="shrink-0 text-xl sm:text-2xl md:text-[1.75rem] text-white font-bold font-baloo-2 mb-2 sm:mb-4 drop-shadow-[0_4px_12px_rgba(0,0,0,0.9)]">
-            What&apos;s the Diagnosis?
-          </h2>
+          <div className="shrink-0 w-full max-w-2xl mx-auto flex items-end justify-between border-b border-rule-strong pb-1.5 mb-3 sm:mb-4">
+            <h2 className="text-lg sm:text-xl text-ink font-semibold font-display">
+              What&apos;s the Diagnosis?
+            </h2>
+            <span className="report-label">Findings</span>
+          </div>
 
           {/* Hints Display — only show revealed hints. On mobile this is the
               flex-1 scroll region: it takes the slack between the pinned image
@@ -201,33 +204,22 @@ export default function GamePage({ puzzle, hints, conditions, dayNumber, isArchi
               hints outgrow that space (keeping image + input fixed in frame).
               Desktop keeps its natural page-scrolling flow via the sm: resets. */}
           {visibleHints.length > 0 && (
-            <div ref={hintsScrollRef} className="w-full max-w-2xl mx-auto space-y-2.5 mb-4 sm:mb-6 flex-1 min-h-0 overflow-y-auto sm:flex-none sm:overflow-visible">
+            <div ref={hintsScrollRef} className="w-full max-w-2xl mx-auto space-y-1.5 mb-4 sm:mb-6 flex-1 min-h-0 overflow-y-auto sm:flex-none sm:overflow-visible">
               {visibleHints.map((hint, index) => {
                 // Hints are revealed after a guess. The guess that revealed this hint is at index.
                 // To color the hint based on the NEXT guess after it was revealed, we look at index + 1.
                 // If there's no next guess yet, the hint stays blue.
                 const nextGuessResult = gameState?.guessResults[index + 1];
 
-                // Determine the color and text color based on the next guess result
-                let hintStyle = '';
-                let textColor = 'text-white';
-
+                // Findings are flat rows; the left rule carries the color of the
+                // guess that followed the hint (neutral until the next guess).
+                let hintStyle = 'border-l-rule-strong';
                 if (nextGuessResult === 'correct') {
-                  // Green for correct guess
-                  hintStyle = 'bg-success';
-                  textColor = 'text-white';
+                  hintStyle = 'border-l-success';
                 } else if (nextGuessResult === 'partial') {
-                  // Yellow for partial match
-                  hintStyle = 'bg-warning';
-                  textColor = 'text-black';
+                  hintStyle = 'border-l-warning';
                 } else if (nextGuessResult === 'incorrect') {
-                  // Red for incorrect guess
-                  hintStyle = 'bg-error';
-                  textColor = 'text-white';
-                } else {
-                  // Default blue if no next guess yet
-                  hintStyle = 'bg-hint-default/70';
-                  textColor = 'text-white';
+                  hintStyle = 'border-l-error';
                 }
 
                 // Only animate hints that were revealed after the initial load
@@ -236,13 +228,13 @@ export default function GamePage({ puzzle, hints, conditions, dayNumber, isArchi
                 return (
                   <div
                     key={hint.id}
-                    className={`relative ${hintStyle} ${textColor} rounded-xl px-5 py-3.5 transition-colors duration-300 border border-white/10 shadow-md${isNewHint ? ' animate-hint-reveal' : ''}`}
+                    className={`relative bg-panel text-ink border border-rule border-l-4 ${hintStyle} px-4 py-2.5 transition-colors duration-300${isNewHint ? ' animate-hint-reveal' : ''}`}
                   >
                     <div className="flex items-start gap-3">
-                      <span className="flex-shrink-0 w-7 h-7 rounded-full bg-white/20 flex items-center justify-center text-sm font-bold font-baloo-2">
-                        {index + 1}
+                      <span className="flex-shrink-0 pt-0.5 font-mono text-sm text-ink-muted">
+                        {String(index + 1).padStart(2, '0')}
                       </span>
-                      <p className="text-base sm:text-lg leading-snug pt-0.5">
+                      <p className="text-base sm:text-[17px] leading-snug">
                         {hint.hint_text || hint.image_caption || `Hint ${index + 1}`}
                       </p>
                     </div>

@@ -4,12 +4,11 @@ import Link from 'next/link';
 import { ReactNode } from 'react';
 
 /**
- * AccentButton — the amber call-to-action used for Archives and other primary
- * actions (design foundation: radiordle-core.jsx `AccentButton`).
+ * AccentButton — the primary call-to-action (e.g. Game Session, Archives).
  *
- * Amber gradient + soft glow, bold black display text. Renders as a Next
- * `<Link>` when `href` is given, otherwise a `<button>`. The gradient is wired
- * to the `--color-accent*` tokens so it stays in sync with the palette.
+ * Flat, square, inverted (light fill / dark text) so it stands out against the
+ * dark report surfaces without gradients or glow. Renders as a Next `<Link>`
+ * when `href` is given, otherwise a `<button>`.
  */
 interface AccentButtonProps {
   icon?: ReactNode;
@@ -24,11 +23,6 @@ interface AccentButtonProps {
   className?: string;
 }
 
-const ACCENT_STYLE = {
-  background: 'linear-gradient(to bottom, var(--color-accent-light), var(--color-accent))',
-  boxShadow: '0 4px 14px rgba(245, 158, 11, 0.45), inset 0 1px 0 rgba(255, 255, 255, 0.4)',
-};
-
 export default function AccentButton({
   icon,
   label,
@@ -38,10 +32,11 @@ export default function AccentButton({
   title,
   className = '',
 }: AccentButtonProps) {
-  const sizeCls = compact ? 'gap-1.5 px-3.5 h-9 text-sm' : 'gap-2 px-4 h-11 text-base';
+  const sizeCls = compact ? 'gap-1.5 px-3 h-8 text-[13px]' : 'gap-2 px-4 h-9 text-sm';
   const cls =
-    'inline-flex items-center justify-center font-baloo-2 font-bold text-black ' +
-    `rounded-xl transition-transform active:scale-95 ${sizeCls} ${className}`.trim();
+    'inline-flex items-center justify-center font-display font-semibold uppercase tracking-[0.06em] ' +
+    'bg-ink text-page-bg border border-ink hover:bg-white transition-colors ' +
+    `${sizeCls} ${className}`.trim();
   const accessibleTitle = title ?? label;
 
   const inner = (
@@ -53,14 +48,14 @@ export default function AccentButton({
 
   if (href) {
     return (
-      <Link href={href} title={accessibleTitle} className={cls} style={ACCENT_STYLE}>
+      <Link href={href} title={accessibleTitle} className={cls}>
         {inner}
       </Link>
     );
   }
 
   return (
-    <button type="button" onClick={onClick} title={accessibleTitle} className={cls} style={ACCENT_STYLE}>
+    <button type="button" onClick={onClick} title={accessibleTitle} className={cls}>
       {inner}
     </button>
   );

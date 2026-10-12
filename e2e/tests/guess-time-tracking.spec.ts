@@ -75,7 +75,7 @@ test.describe('Guess Time Tracking', () => {
 
     // Win the game
     await submitGuess(page, correctAnswer);
-    await expect(page.getByText('Congratulations!').first()).toBeVisible({ timeout: 3000 });
+    await expect(page.getByText('Correct — Impression').first()).toBeVisible({ timeout: 3000 });
 
     // The results modal should show average guess time
     const modal = page.locator('[data-testid="results-modal"]');
@@ -120,7 +120,7 @@ test.describe('Guess Time Tracking', () => {
     // Wait and win
     await page.waitForTimeout(1500);
     await submitGuess(page, correctAnswer);
-    await expect(page.getByText('Congratulations!').first()).toBeVisible({ timeout: 3000 });
+    await expect(page.getByText('Correct — Impression').first()).toBeVisible({ timeout: 3000 });
 
     // Close the results modal
     await page.getByRole('button', { name: 'Close' }).first().click();

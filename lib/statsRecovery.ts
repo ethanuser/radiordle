@@ -11,23 +11,9 @@ import {
   syncExistingHashToBackups,
 } from './playerIdentity';
 import { Statistics, saveStatistics, getStatistics } from './localStorage';
+import { fetchPlayerStats } from './playerStats';
 
 const RECOVERY_ATTEMPTED_KEY = 'radiordle_recovery_attempted';
-
-interface RecoveredStats {
-  gamesPlayed: number;
-  gamesWon: number;
-  currentStreak: number;
-  maxStreak: number;
-  guessDistribution: { [key: number]: number };
-  lastPlayedDay: number | null;
-  gameStates: Array<{
-    dayNumber: number;
-    puzzleNumber: number;
-    won: boolean;
-    guessCount: number;
-  }>;
-}
 
 /**
  * Checks if statistics need to be recovered and fetches from server if needed.
@@ -76,23 +62,15 @@ export async function attemptStatsRecovery(): Promise<boolean> {
 
     console.log('Attempting to recover stats for player:', playerHash.slice(0, 8) + '...');
 
-    // Fetch stats from server
-    const response = await fetch(`/api/player-stats?hash=${encodeURIComponent(playerHash)}`);
+    // Fetch stats from the backend
+    const recoveredStats = await fetchPlayerStats(playerHash);
 
-    if (!response.ok) {
-      if (response.status === 404) {
-        console.log('No server-side stats found for player');
-      } else if (response.status === 429) {
-        console.log('Rate limited - try again later');
-      } else {
-        console.error('Failed to fetch stats:', response.status);
-      }
+    if (!recoveredStats) {
+      console.log('No server-side stats found for player');
       // Still restore the player hash even if no stats found
       await storePlayerHash(playerHash);
       return false;
     }
-
-    const recoveredStats: RecoveredStats = await response.json();
 
     // Restore stats to localStorage
     const stats: Statistics = {
@@ -139,19 +117,11 @@ export async function forceStatsRecovery(): Promise<{
       return { success: false, error: 'No player identity found in backups' };
     }
 
-    const response = await fetch(`/api/player-stats?hash=${encodeURIComponent(playerHash)}`);
+    const recoveredStats = await fetchPlayerStats(playerHash);
 
-    if (!response.ok) {
-      if (response.status === 404) {
-        return { success: false, error: 'No game history found on server' };
-      }
-      if (response.status === 429) {
-        return { success: false, error: 'Too many requests - please try again later' };
-      }
-      return { success: false, error: `Server error: ${response.status}` };
+    if (!recoveredStats) {
+      return { success: false, error: 'No game history found on server' };
     }
-
-    const recoveredStats: RecoveredStats = await response.json();
 
     const stats: Statistics = {
       gamesPlayed: recoveredStats.gamesPlayed,

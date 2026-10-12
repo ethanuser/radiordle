@@ -25,7 +25,7 @@ test.describe('Stats Recovery', () => {
 
     // Win a game to establish stats
     await submitGuess(page, correctAnswer);
-    await expect(page.getByText('Congratulations!').first()).toBeVisible({ timeout: 3000 });
+    await expect(page.getByText('Correct — Impression').first()).toBeVisible({ timeout: 3000 });
 
     // Verify stats were saved
     const statsBeforeClear = await page.evaluate(() => {

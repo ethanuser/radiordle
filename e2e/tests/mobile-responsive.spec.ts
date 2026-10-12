@@ -97,7 +97,7 @@ test.describe('Mobile Responsiveness', () => {
     await submitGuess(page, correctAnswer);
 
     // Win modal should appear (use :visible to skip hidden desktop layout)
-    await expect(page.locator(':visible:has-text("Congratulations!")').first()).toBeVisible({ timeout: 3000 });
+    await expect(page.locator(':visible:has-text("Correct — Impression")').first()).toBeVisible({ timeout: 3000 });
 
     // Modal should be scrollable and fully visible (redesigned ModalShell panel
     // caps at max-h-[92vh]).
