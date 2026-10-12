@@ -11,7 +11,7 @@ vi.mock('@supabase/supabase-js', () => ({
   })),
 }))
 
-import { getHintsFromPuzzle, calculatePercentileBeat, calculatePuzzlePercentile } from '@/lib/supabase'
+import { getHintsFromPuzzle } from '@/lib/supabase'
 import type { Puzzle } from '@/lib/supabase'
 
 function makePuzzle(overrides: Partial<Puzzle> = {}): Puzzle {
@@ -102,109 +102,5 @@ describe('getHintsFromPuzzle', () => {
     expect(hints[0].image_url).toBeNull()
     expect(hints[0].image_caption).toBeNull()
     expect(hints[0].content_type).toBe('text')
-  })
-})
-
-describe('calculatePercentileBeat', () => {
-  it('returns high percentile for user who wins in 1 guess', () => {
-    const userDist = { 1: 10 }
-    const globalDist = { 1: 5, 2: 20, 3: 30, 4: 25, 5: 20 }
-    const result = calculatePercentileBeat(userDist, globalDist)
-
-    // User avg = 1, players with > 1 guess: 20+30+25+20 = 95 out of 100
-    expect(result).toBe(95)
-  })
-
-  it('returns 0 for user with worst possible average', () => {
-    const userDist = { 5: 10 }
-    const globalDist = { 1: 10, 2: 20, 3: 30, 4: 25, 5: 15 }
-    const result = calculatePercentileBeat(userDist, globalDist)
-
-    // User avg = 5, no global players with > 5 guesses
-    expect(result).toBe(0)
-  })
-
-  it('returns null when user has no wins', () => {
-    const userDist = {}
-    const globalDist = { 1: 10, 2: 20 }
-    expect(calculatePercentileBeat(userDist, globalDist)).toBeNull()
-  })
-
-  it('returns null when global has no wins', () => {
-    const userDist = { 1: 5 }
-    const globalDist = {}
-    expect(calculatePercentileBeat(userDist, globalDist)).toBeNull()
-  })
-
-  it('handles average user correctly', () => {
-    const userDist = { 3: 10 }
-    const globalDist = { 1: 10, 2: 20, 3: 30, 4: 25, 5: 15 }
-    const result = calculatePercentileBeat(userDist, globalDist)
-
-    // User avg = 3, players with > 3 guesses: 25+15 = 40 out of 100
-    expect(result).toBe(40)
-  })
-
-  it('handles mixed user distribution', () => {
-    const userDist = { 2: 5, 4: 5 }
-    const globalDist = { 1: 10, 2: 20, 3: 30, 4: 25, 5: 15 }
-    const result = calculatePercentileBeat(userDist, globalDist)
-
-    // User avg = (2*5 + 4*5)/10 = 30/10 = 3.0
-    // Players with > 3 guesses: 25+15 = 40 out of 100
-    expect(result).toBe(40)
-  })
-
-  it('returns rounded integer', () => {
-    const userDist = { 2: 1 }
-    const globalDist = { 1: 1, 2: 1, 3: 1 }
-    const result = calculatePercentileBeat(userDist, globalDist)
-
-    // User avg = 2, players with > 2: 1 out of 3 = 33.33...
-    expect(result).toBe(33)
-  })
-})
-
-describe('calculatePuzzlePercentile', () => {
-  it('includes losers when totalAttempts is provided', () => {
-    // 100 total attempts, 60 wins, 40 losses
-    const dist = { 1: 15, 2: 20, 3: 15, 4: 10 }
-    const result = calculatePuzzlePercentile(1, dist, 100)
-
-    // worseThanUser = 40 (losers) + 20+15+10 (worse winners) = 85
-    // 85/100 = 85%
-    expect(result).toBe(85)
-  })
-
-  it('falls back to winners-only when totalAttempts not provided', () => {
-    const dist = { 1: 15, 2: 20, 3: 15, 4: 10 }
-    const result = calculatePuzzlePercentile(1, dist)
-
-    // worseThanUser = 20+15+10 = 45, totalWins = 60
-    // 45/60 = 75%
-    expect(result).toBe(75)
-  })
-
-  it('returns null for empty distribution', () => {
-    expect(calculatePuzzlePercentile(1, {})).toBeNull()
-    expect(calculatePuzzlePercentile(1, {}, 0)).toBeNull()
-  })
-
-  it('returns 0 for worst guess with no losers', () => {
-    const dist = { 1: 10, 2: 20, 3: 30, 4: 25, 5: 15 }
-    const result = calculatePuzzlePercentile(5, dist, 100)
-
-    // No one took more guesses, losers = 0
-    expect(result).toBe(0)
-  })
-
-  it('counts all losers as worse even for worst guess count', () => {
-    const dist = { 1: 10, 2: 20, 3: 15, 4: 10, 5: 5 }
-    // 60 wins, 40 losses
-    const result = calculatePuzzlePercentile(5, dist, 100)
-
-    // worseThanUser = 40 (losers) + 0 (no worse winners) = 40
-    // 40/100 = 40%
-    expect(result).toBe(40)
   })
 })

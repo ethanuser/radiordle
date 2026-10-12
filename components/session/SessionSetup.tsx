@@ -350,8 +350,8 @@ export default function SessionSetup() {
           </button>
         </div>
         <div className="flex flex-wrap gap-2 justify-end">
-          <Link href="/" className={SECONDARY_BUTTON}>
-            Cancel
+          <Link href="/session" onClick={() => setSettings(settingsFromQuery(''))} className={SECONDARY_BUTTON}>
+            Reset
           </Link>
           {canStart ? (
             <Link href={`/session/play?${query}`} className={PRIMARY_BUTTON}>

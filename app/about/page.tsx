@@ -4,12 +4,10 @@ import Image from 'next/image';
 import TopBar from '@/components/TopBar';
 import { withBasePath } from '@/lib/paths';
 import PlainBackground from '@/components/PlainBackground';
-import AboutFeedbackButton from '@/components/AboutFeedbackButton';
-import LegalModals from '@/components/LegalModals';
 
 export const metadata: Metadata = {
   title: 'About - Radiordle',
-  description: 'Learn about Radiordle, the daily radiology puzzle game designed for medical students, radiology residents, and healthcare professionals.',
+  description: 'About this teaching edition of Radiordle.',
 };
 
 /** Content section on the About screen — a flat, ruled report section. */
@@ -21,13 +19,6 @@ function AboutCard({ title, children }: { title: string; children: ReactNode }) 
     </section>
   );
 }
-
-const HOW_TO_PLAY = [
-  'View the medical image and make your best diagnosis guess',
-  'After each incorrect guess, a new hint is revealed to help narrow down the diagnosis',
-  'You have 5 attempts to guess the correct diagnosis',
-  'Share your results and compare with colleagues!',
-];
 
 // The team — Kishan (left) and Tanmay (right).
 const TEAM = [
@@ -62,10 +53,10 @@ export default function AboutPage() {
           <div className="w-full max-w-2xl space-y-5">
             <AboutCard title="About Radiordle">
               <p>
-                Radiordle is a daily radiology puzzle game inspired by Wordle. Each day, players are presented with a medical imaging case and must guess the correct diagnosis.
-              </p>
-              <p>
-                New puzzles are released daily at midnight EST, featuring a variety of imaging modalities including X-rays, CT scans, MRIs, and ultrasounds.
+                Radiordle is a daily radiology puzzle game inspired by Wordle, created by Kishan Asokan and Tanmay
+                Singh. This site is a teaching adaptation: it reads cases from the Radiordle library (read-only) and
+                runs them as instructor-configured Game Sessions. The daily game itself is at{' '}
+                <a href="https://www.radiordle.org" className="underline underline-offset-4 text-ink">radiordle.org</a>.
               </p>
             </AboutCard>
 
@@ -81,17 +72,6 @@ export default function AboutPage() {
                 effusion, empyema, lung abscess) using openly licensed Wikimedia Commons images, credited on each
                 case. The supplemental clinical vignettes are illustrative.
               </p>
-            </AboutCard>
-
-            <AboutCard title="How to Play">
-              <ol className="space-y-3">
-                {HOW_TO_PLAY.map((text, i) => (
-                  <li key={i} className="flex items-start gap-3">
-                    <span className="font-mono text-sm text-ink-faint pt-0.5">{String(i + 1).padStart(2, '0')}</span>
-                    <span>{text}</span>
-                  </li>
-                ))}
-              </ol>
             </AboutCard>
 
             <AboutCard title="Meet the Team">
@@ -127,7 +107,6 @@ export default function AboutPage() {
                   </svg>
                   GitHub Repository
                 </a>
-                <AboutFeedbackButton />
               </div>
             </AboutCard>
 
@@ -144,9 +123,6 @@ export default function AboutPage() {
                 Radiordle is designed for entertainment and general educational interest only and does not provide medical advice. Users should consult a qualified healthcare professional for medical concerns. All images used are sourced from open-source or free-use collections and are used in accordance with their licenses.
               </p>
             </section>
-
-            {/* Legal (Terms / Privacy) */}
-            <LegalModals />
 
             <p className="text-ink-faint text-center text-xs font-mono py-4">
               © {new Date().getFullYear()} Radiordle. For educational and entertainment purposes only.
