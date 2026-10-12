@@ -123,7 +123,7 @@ export default function SessionPlayer() {
   if (phase === 'intro') {
     return (
       <Sheet label="Game Session" title={`${items.length} case${items.length === 1 ? '' : 's'}`}>
-        <dl className="grid grid-cols-[140px_1fr] border border-rule text-sm">
+        <dl className="grid grid-cols-[140px_1fr] lg:grid-cols-[200px_1fr] border border-rule text-sm lg:text-xl">
           <Row term="Diagnoses">
             {settings.diagnoses.map((d) => (
               <span key={d.name} className="block">
@@ -160,7 +160,7 @@ export default function SessionPlayer() {
           <Link href={`/session?${query}`} className={SECONDARY_BUTTON}>
             <Settings2 size={15} /> Edit settings
           </Link>
-          <button type="button" onClick={start} className={PRIMARY_BUTTON} autoFocus>
+          <button type="button" onClick={start} className={`${PRIMARY_BUTTON} lg:h-14 lg:px-8 lg:text-lg`} autoFocus>
             <Play size={15} /> Begin
           </button>
         </div>
@@ -180,15 +180,15 @@ export default function SessionPlayer() {
       .filter((d) => d.total > 0);
 
     return (
-      <div className="w-full max-w-3xl mx-auto px-4 py-6 sm:py-8 space-y-5">
+      <div className="w-full max-w-3xl lg:max-w-5xl mx-auto px-4 py-6 sm:py-8 lg:py-10 space-y-5 lg:space-y-7">
         <div className="border-b border-rule-strong pb-3 flex flex-wrap items-end justify-between gap-3">
           <div>
             <p className="report-label">Game Session · Summary</p>
-            <h1 className="text-2xl sm:text-[28px] font-semibold text-ink mt-1">
+            <h1 className="text-2xl sm:text-[28px] lg:text-5xl font-semibold text-ink mt-1">
               {solved} / {items.length} correct
             </h1>
           </div>
-          <p className="font-mono text-xs text-ink-muted">
+          <p className="font-mono text-xs lg:text-base text-ink-muted">
             {Math.round((solved / items.length) * 100)}% · {firstTry} ON FIRST ATTEMPT
           </p>
         </div>
@@ -196,7 +196,7 @@ export default function SessionPlayer() {
         <ResultStrip records={records} total={items.length} />
 
         <div className="border border-rule bg-panel overflow-x-auto">
-          <table className="w-full text-sm">
+          <table className="w-full text-sm lg:text-lg">
             <thead>
               <tr className="border-b border-rule text-left">
                 {['#', 'Diagnosis', 'Your answers', 'Result'].map((h) => (
@@ -211,14 +211,14 @@ export default function SessionPlayer() {
                 const r = records[i] ?? EMPTY_RECORD;
                 return (
                   <tr key={i} className="border-b border-rule last:border-b-0 align-top">
-                    <td className="px-3 py-2 font-mono text-xs text-ink-faint">{String(i + 1).padStart(2, '0')}</td>
-                    <td className="px-3 py-2 text-ink">
+                    <td className="px-3 lg:px-4 py-2 lg:py-3 font-mono text-xs text-ink-faint">{String(i + 1).padStart(2, '0')}</td>
+                    <td className="px-3 lg:px-4 py-2 lg:py-3 text-ink">
                       {it.diagnosis}
-                      <span className="block font-mono text-[11px] text-ink-faint uppercase">{it.case.label}</span>
+                      <span className="block font-mono text-[11px] lg:text-xs text-ink-faint uppercase">{it.case.label}</span>
                     </td>
-                    <td className="px-3 py-2 text-ink-muted">{r.guesses.length ? r.guesses.join(' → ') : '—'}</td>
+                    <td className="px-3 lg:px-4 py-2 lg:py-3 text-ink-muted">{r.guesses.length ? r.guesses.join(' → ') : '—'}</td>
                     <td
-                      className={`px-3 py-2 font-mono text-[11px] uppercase whitespace-nowrap ${
+                      className={`px-3 lg:px-4 py-2 lg:py-3 font-mono text-[11px] lg:text-sm uppercase whitespace-nowrap ${
                         r.solved ? 'text-ring-success' : 'text-ring-error'
                       }`}
                     >
@@ -236,12 +236,12 @@ export default function SessionPlayer() {
             <p className="report-label px-3 py-2 border-b border-rule">By diagnosis</p>
             <ul className="divide-y divide-rule">
               {byDx.map((d) => (
-                <li key={d.name} className="flex items-center gap-3 px-3 py-2 text-sm">
-                  <span className="w-40 text-ink">{d.name}</span>
-                  <span className="flex-1 h-2 bg-surface border border-rule">
+                <li key={d.name} className="flex items-center gap-3 px-3 lg:px-4 py-2 lg:py-3 text-sm lg:text-lg">
+                  <span className="w-40 lg:w-56 text-ink">{d.name}</span>
+                  <span className="flex-1 h-2 lg:h-3 bg-surface border border-rule">
                     <span className="block h-full bg-ink" style={{ width: `${(d.correct / d.total) * 100}%` }} />
                   </span>
-                  <span className="font-mono text-xs text-ink-muted w-12 text-right">
+                  <span className="font-mono text-xs lg:text-base text-ink-muted w-12 lg:w-16 text-right">
                     {d.correct}/{d.total}
                   </span>
                 </li>
@@ -273,7 +273,7 @@ export default function SessionPlayer() {
   // ---- Case ----
   return (
     <>
-      <div className="w-full max-w-[1280px] mx-auto px-3 sm:px-6 pt-4">
+      <div className="w-full px-3 sm:px-6 lg:px-8 pt-4">
         <ResultStrip records={records} total={items.length} current={index} />
       </div>
       <SessionCaseView
@@ -304,7 +304,7 @@ function ResultStrip({ records, total, current }: { records: CaseRecord[]; total
         return (
           <span
             key={i}
-            className={`h-2.5 flex-1 border ${i === current ? 'border-ink' : 'border-rule'} ${color}`}
+            className={`h-2.5 lg:h-3 flex-1 border ${i === current ? 'border-ink' : 'border-rule'} ${color}`}
           />
         );
       })}
@@ -314,11 +314,11 @@ function ResultStrip({ records, total, current }: { records: CaseRecord[]; total
 
 function Sheet({ label, title, children }: { label: string; title: string; children?: React.ReactNode }) {
   return (
-    <div className="w-full max-w-2xl mx-auto px-4 py-10">
-      <div className="border border-rule bg-panel p-5 sm:p-6 space-y-4">
+    <div className="w-full max-w-2xl lg:max-w-4xl mx-auto px-4 py-10 lg:py-16">
+      <div className="border border-rule bg-panel p-5 sm:p-6 lg:p-10 space-y-4 lg:space-y-6 lg:text-lg">
         <div className="border-b border-rule pb-3">
           <p className="report-label">{label}</p>
-          <h1 className="text-2xl font-semibold text-ink mt-1">{title}</h1>
+          <h1 className="text-2xl lg:text-5xl font-semibold text-ink mt-1 lg:mt-2">{title}</h1>
         </div>
         {children}
       </div>
@@ -329,8 +329,8 @@ function Sheet({ label, title, children }: { label: string; title: string; child
 function Row({ term, children }: { term: string; children: React.ReactNode }) {
   return (
     <>
-      <dt className="report-label !text-[10px] px-3 py-2 border-b border-r border-rule">{term}</dt>
-      <dd className="px-3 py-2 border-b border-rule text-ink">{children}</dd>
+      <dt className="report-label !text-[10px] lg:!text-xs px-3 lg:px-5 py-2 lg:py-3.5 border-b border-r border-rule">{term}</dt>
+      <dd className="px-3 lg:px-5 py-2 lg:py-3.5 border-b border-rule text-ink">{children}</dd>
     </>
   );
 }

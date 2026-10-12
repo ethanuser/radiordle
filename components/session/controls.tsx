@@ -18,10 +18,10 @@ export function Section({ index, title, children }: { index: number; title: stri
 /** Label + control row. */
 export function Field({ label, hint, children }: { label: string; hint?: string; children: ReactNode }) {
   return (
-    <div className="grid gap-1.5 sm:grid-cols-[200px_1fr] sm:items-start sm:gap-4">
+    <div className="grid gap-1.5 sm:grid-cols-[200px_1fr] lg:grid-cols-[260px_1fr] sm:items-start sm:gap-4">
       <div className="sm:pt-2">
-        <p className="text-sm font-medium text-ink">{label}</p>
-        {hint && <p className="text-xs text-ink-faint mt-0.5">{hint}</p>}
+        <p className="text-sm lg:text-base font-medium text-ink">{label}</p>
+        {hint && <p className="text-xs lg:text-sm text-ink-faint mt-0.5">{hint}</p>}
       </div>
       <div>{children}</div>
     </div>
@@ -51,7 +51,7 @@ export function Segmented<T extends string | number>({
             role="radio"
             aria-checked={selected}
             onClick={() => onChange(o.value)}
-            className={`px-3.5 h-9 text-sm font-medium border-r border-rule-strong last:border-r-0 transition-colors ${
+            className={`px-3.5 lg:px-4 h-9 lg:h-11 text-sm lg:text-base font-medium border-r border-rule-strong last:border-r-0 transition-colors ${
               selected ? 'bg-ink text-page-bg' : 'text-ink-muted hover:text-ink hover:bg-surface'
             }`}
           >
@@ -84,8 +84,8 @@ export function Check({
         className="mt-0.5 w-4 h-4 accent-[#ececec] flex-shrink-0"
       />
       <span>
-        <span className="block text-sm text-ink">{label}</span>
-        {description && <span className="block text-xs text-ink-faint mt-0.5">{description}</span>}
+        <span className="block text-sm lg:text-base text-ink">{label}</span>
+        {description && <span className="block text-xs lg:text-sm text-ink-faint mt-0.5">{description}</span>}
       </span>
     </label>
   );
@@ -106,13 +106,13 @@ export function Stepper({
   label: string;
 }) {
   const btn =
-    'w-8 h-8 flex items-center justify-center text-ink-muted hover:text-ink hover:bg-surface disabled:opacity-30 disabled:hover:bg-transparent transition-colors';
+    'w-8 h-8 lg:w-10 lg:h-10 flex items-center justify-center text-ink-muted hover:text-ink hover:bg-surface disabled:opacity-30 disabled:hover:bg-transparent transition-colors';
   return (
     <div className="inline-flex items-center border border-rule-strong" aria-label={label}>
       <button type="button" className={btn} onClick={() => onChange(value - 1)} disabled={value <= min} aria-label={`Fewer ${label}`}>
         −
       </button>
-      <span className="w-9 h-8 flex items-center justify-center font-mono text-sm text-ink border-x border-rule-strong">
+      <span className="w-9 h-8 lg:w-11 lg:h-10 flex items-center justify-center font-mono text-sm lg:text-base text-ink border-x border-rule-strong">
         {value}
       </span>
       <button type="button" className={btn} onClick={() => onChange(value + 1)} disabled={value >= max} aria-label={`More ${label}`}>

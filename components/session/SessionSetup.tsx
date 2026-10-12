@@ -104,12 +104,12 @@ export default function SessionSetup() {
   const canStart = ready && plannedTotal > 0 && (settings.answer === 'typed' || choiceCount >= 2);
 
   return (
-    <div className="w-full max-w-3xl mx-auto px-4 py-6 sm:py-8 space-y-5">
+    <div className="w-full max-w-3xl lg:max-w-5xl mx-auto px-4 py-6 sm:py-8 lg:py-10 space-y-5 lg:space-y-6 lg:text-lg">
       {/* Title block */}
       <div className="border-b border-rule-strong pb-3">
         <p className="report-label">Game Session</p>
-        <h1 className="text-2xl sm:text-[28px] font-semibold text-ink mt-1">Session setup</h1>
-        <p className="text-sm text-ink-muted mt-1.5 max-w-2xl">
+        <h1 className="text-2xl sm:text-[28px] lg:text-4xl font-semibold text-ink mt-1">Session setup</h1>
+        <p className="text-sm lg:text-base text-ink-muted mt-1.5 max-w-3xl">
           Choose the diagnoses and how many cases of each, then start the session or copy its link. The
           link encodes every setting below, so a class can open the same session.
         </p>
@@ -126,7 +126,7 @@ export default function SessionSetup() {
 
       <Section index={1} title="Diagnoses">
         <div className="border border-rule overflow-x-auto">
-          <table className="w-full text-sm">
+          <table className="w-full text-sm lg:text-lg">
             <thead>
               <tr className="border-b border-rule text-left">
                 <th className="report-label !text-[10px] font-semibold px-3 py-2">Diagnosis</th>

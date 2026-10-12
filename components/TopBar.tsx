@@ -2,7 +2,7 @@
 
 import { useState } from 'react';
 import Link from 'next/link';
-import { BarChart3, Info, MessageCircle, Archive, Menu, Download, ClipboardList, CalendarDays } from 'lucide-react';
+import { BarChart3, MessageCircle, Menu, Download, ClipboardList } from 'lucide-react';
 import GlassIconButton from './ui/GlassIconButton';
 import AccentButton from './ui/AccentButton';
 
@@ -12,8 +12,8 @@ import AccentButton from './ui/AccentButton';
  * Renders desktop and mobile layouts side by side and lets CSS pick one
  * (matching the app's dual-layout convention so the `:visible` e2e selectors
  * keep working):
- *   - Desktop (>= sm): wordmark on the left; Daily / Archive / Stats / About /
- *     Feedback text links and the primary Game Session button on the right.
+ *   - Desktop (>= sm): wordmark on the left; Stats / Feedback (when provided)
+ *     and the primary Game Session button on the right.
  *   - Mobile (< sm): wordmark, Game Session button, and a menu with the rest.
  *
  * `onStats` / `onFeedback` are optional; pages without those modals omit them
@@ -34,7 +34,7 @@ const MENU_ITEM =
 
 export function Wordmark({ compact = false }: { compact?: boolean }) {
   return (
-    <Link href="/" aria-label="Radiordle home" className="flex items-center gap-2.5">
+    <Link href="/session" aria-label="Radiordle Game Session" className="flex items-center gap-2.5">
       <span
         aria-hidden="true"
         className="relative flex-shrink-0 border border-ink"
@@ -64,31 +64,19 @@ export default function TopBar({ onStats, onFeedback }: TopBarProps) {
         <Wordmark />
 
         <nav className="flex-1 flex items-center justify-end gap-1">
-          <Link href="/" className={NAV_LINK}>
-            <CalendarDays size={15} />
-            Daily
-          </Link>
-          <Link href="/archive" className={NAV_LINK}>
-            <Archive size={15} />
-            Archive
-          </Link>
           {onStats && (
             <button type="button" onClick={onStats} aria-label="Stats" className={NAV_LINK}>
               <BarChart3 size={15} />
               Stats
             </button>
           )}
-          <Link href="/about" className={NAV_LINK}>
-            <Info size={15} />
-            About
-          </Link>
           {onFeedback && (
             <button type="button" onClick={onFeedback} aria-label="Feedback" className={NAV_LINK}>
               <MessageCircle size={15} />
               Feedback
             </button>
           )}
-          <span className="w-px h-6 bg-rule mx-2" aria-hidden="true" />
+          {(onStats || onFeedback) && <span className="w-px h-6 bg-rule mx-2" aria-hidden="true" />}
           <AccentButton icon={<ClipboardList size={16} />} label="Game Session" href="/session" />
         </nav>
       </div>
@@ -110,14 +98,6 @@ export default function TopBar({ onStats, onFeedback }: TopBarProps) {
             {/* Click-away layer */}
             <div className="fixed inset-0 z-[55]" onClick={() => setMenuOpen(false)} aria-hidden="true" />
             <div className="absolute right-3 top-[52px] z-[61] min-w-[200px] bg-panel border border-rule-strong">
-              <Link href="/" onClick={() => setMenuOpen(false)} className={MENU_ITEM}>
-                <CalendarDays size={16} />
-                Daily
-              </Link>
-              <Link href="/archive" onClick={() => setMenuOpen(false)} className={MENU_ITEM}>
-                <Archive size={16} />
-                Archive
-              </Link>
               {onStats && (
                 <button
                   type="button"
@@ -131,10 +111,6 @@ export default function TopBar({ onStats, onFeedback }: TopBarProps) {
                   Stats
                 </button>
               )}
-              <Link href="/about" onClick={() => setMenuOpen(false)} className={MENU_ITEM}>
-                <Info size={16} />
-                About
-              </Link>
               {onFeedback && (
                 <button
                   type="button"
