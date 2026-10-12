@@ -2,7 +2,8 @@
 
 import { useEffect, useMemo, useState } from 'react';
 import Link from 'next/link';
-import { useRouter, useSearchParams } from 'next/navigation';
+import { useSearchParams } from 'next/navigation';
+import { BASE_PATH } from '@/lib/paths';
 import { X, Copy, Play, RefreshCw } from 'lucide-react';
 import {
   casesForDiagnosis,
@@ -26,7 +27,6 @@ import { sessionUrl, copyText } from './links';
  * settings.
  */
 export default function SessionSetup() {
-  const router = useRouter();
   const searchParams = useSearchParams();
   const library = useSessionLibrary();
   const [settings, setSettings] = useState<SessionSettings>(() => settingsFromQuery(searchParams.toString()));
@@ -35,10 +35,14 @@ export default function SessionSetup() {
 
   const query = settingsToQuery(settings);
 
-  // Mirror settings into the address bar (without adding history entries)
+  // Mirror settings into the address bar without adding history entries.
+  // Uses the History API directly rather than router.replace: on a static host
+  // a router navigation fetches page data, and a stale cached copy after a
+  // deploy makes Next fall back to a full reload — which re-ran this effect
+  // and looped.
   useEffect(() => {
-    router.replace(`/session?${query}`, { scroll: false });
-  }, [query, router]);
+    window.history.replaceState(window.history.state, '', `${BASE_PATH}/session/?${query}`);
+  }, [query]);
 
   const poolOptions = useMemo(
     () => ({
