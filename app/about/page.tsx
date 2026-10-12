@@ -7,7 +7,7 @@ import PlainBackground from '@/components/PlainBackground';
 
 export const metadata: Metadata = {
   title: 'About - Radiordle',
-  description: 'About this teaching edition of Radiordle.',
+  description: 'About Radiordle and its Game Session teaching mode.',
 };
 
 /** Content section on the About screen — a flat, ruled report section. */
@@ -54,9 +54,14 @@ export default function AboutPage() {
             <AboutCard title="About Radiordle">
               <p>
                 Radiordle is a daily radiology puzzle game inspired by Wordle, created by Kishan Asokan and Tanmay
-                Singh. This site is a teaching adaptation: it reads cases from the Radiordle library (read-only) and
-                runs them as instructor-configured Game Sessions. The daily game itself is at{' '}
-                <a href="https://www.radiordle.org" className="underline underline-offset-4 text-ink">radiordle.org</a>.
+                Singh. Each day there is a new imaging case; you have five guesses, and a finding is revealed after
+                each wrong one. This site shows the same daily puzzle as{' '}
+                <a href="https://www.radiordle.org" className="underline underline-offset-4 text-ink">radiordle.org</a>{' '}
+                and adds Game Sessions for teaching.
+              </p>
+              <p>
+                It reads the Radiordle library read-only: your results and statistics stay in your browser and are
+                not submitted to the shared database.
               </p>
             </AboutCard>
 

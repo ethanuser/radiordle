@@ -4,8 +4,8 @@
  * A session is fully described by its settings, which round-trip through the
  * URL query string so a session can be bookmarked or shared with a class:
  *
- *   /session/play/?dx=Pneumonia:2&dx=Empyema:1&order=random&repeats=0&tries=2
- *                  &hints=progressive&answer=choice&seed=k3j9
+ *   /session/play/?dx=Pneumonia:2&dx=Empyema:1&order=random&repeats=0&tries=3
+ *                  &hints=progressive&answer=typed&hide=1&inc=L80&exc=L10
  *
  * Everything here is pure (no React, no network) so it can be unit tested.
  */
@@ -45,6 +45,12 @@ export interface SessionSettings {
   unreleased: boolean;
   /** Include the bundled supplemental cases. */
   supplemental: boolean;
+  /** Case keys (e.g. "L80", "S1") always used, overriding the source filters. */
+  include: string[];
+  /** Case keys never used. */
+  exclude: string[];
+  /** Hide the diagnoses and counts on the student-facing start screen. */
+  hideContents: boolean;
 }
 
 export const DEFAULT_DIAGNOSES = ['Pneumonia', 'Pleural effusion', 'Empyema', 'Lung abscess'];
@@ -55,13 +61,16 @@ export const DEFAULT_SETTINGS: SessionSettings = {
   diagnoses: DEFAULT_DIAGNOSES.map((name) => ({ name, count: 1 })),
   order: 'random',
   repeats: false,
-  tries: 2,
+  tries: 3,
   hints: 'progressive',
-  answer: 'choice',
+  answer: 'typed',
   seed: null,
   related: false,
   unreleased: false,
   supplemental: true,
+  include: [],
+  exclude: [],
+  hideContents: true,
 };
 
 const ORDERS: SessionOrder[] = ['random', 'grouped', 'interleaved'];
@@ -87,6 +96,9 @@ export function settingsToQuery(settings: SessionSettings): string {
   if (settings.related) params.set('related', '1');
   if (settings.unreleased) params.set('unreleased', '1');
   if (!settings.supplemental) params.set('supplemental', '0');
+  if (settings.include.length) params.set('inc', settings.include.join(','));
+  if (settings.exclude.length) params.set('exc', settings.exclude.join(','));
+  params.set('hide', settings.hideContents ? '1' : '0');
   return params.toString();
 }
 
@@ -130,7 +142,20 @@ export function settingsFromQuery(query: string | URLSearchParams): SessionSetti
     related: params.get('related') === '1',
     unreleased: params.get('unreleased') === '1',
     supplemental: params.get('supplemental') !== '0',
+    include: parseKeys(params.get('inc')),
+    exclude: parseKeys(params.get('exc')),
+    hideContents: params.get('hide') !== '0',
   };
+}
+
+/** Parses a comma-separated list of case keys ("L80,S1"). */
+function parseKeys(value: string | null): string[] {
+  if (!value) return [];
+  const keys = value
+    .split(',')
+    .map((k) => k.trim().toUpperCase())
+    .filter((k) => /^[LS]\d{1,6}$/.test(k));
+  return Array.from(new Set(keys));
 }
 
 // ============================================
@@ -139,6 +164,8 @@ export function settingsFromQuery(query: string | URLSearchParams): SessionSetti
 
 export interface SessionCase {
   id: string;
+  /** Short stable key used in URLs: "L<puzzle_number>" or "S<n>". */
+  key: string;
   source: 'library' | 'supplemental';
   /** Short reference shown on the case, e.g. "Library #142" or "Supplemental S2". */
   label: string;
@@ -159,6 +186,7 @@ export function puzzleToSessionCase(puzzle: Puzzle, today: number): SessionCase 
     puzzle.status === 'retired' || (puzzle.last_shown_day >= 0 && puzzle.last_shown_day <= today);
   return {
     id: `library-${puzzle.id}`,
+    key: `L${puzzle.puzzle_number}`,
     source: 'library',
     label: `Library #${puzzle.puzzle_number}`,
     imageUrl: puzzle.image_url,
@@ -215,7 +243,38 @@ export interface PoolOptions {
   related: boolean;
   unreleased: boolean;
   supplemental: boolean;
+  include?: string[];
+  exclude?: string[];
   conditions?: Condition[];
+}
+
+/**
+ * Every case that could belong to a diagnosis — related answers and unreleased
+ * puzzles included — regardless of the source filters. This is the list the
+ * instructor picks from on the setup page.
+ */
+export function candidatesForDiagnosis(
+  allCases: SessionCase[],
+  diagnosis: string,
+  conditions?: Condition[]
+): SessionCase[] {
+  const aliases = conditions ? findCondition(conditions, diagnosis)?.aliases : null;
+  return allCases.filter((c) => caseMatchesDiagnosis(c.answer, diagnosis, { related: true, aliases }));
+}
+
+/** Whether a candidate case passes the source filters (before per-case overrides). */
+export function passesFilters(c: SessionCase, diagnosis: string, options: PoolOptions): boolean {
+  if (c.source === 'supplemental' && !options.supplemental) return false;
+  if (c.source === 'library' && !c.released && !options.unreleased) return false;
+  const aliases = options.conditions ? findCondition(options.conditions, diagnosis)?.aliases : null;
+  return caseMatchesDiagnosis(c.answer, diagnosis, { related: options.related, aliases });
+}
+
+/** Whether a candidate case is used, after applying include/exclude overrides. */
+export function isCaseSelected(c: SessionCase, diagnosis: string, options: PoolOptions): boolean {
+  if (options.exclude?.includes(c.key)) return false;
+  if (options.include?.includes(c.key)) return true;
+  return passesFilters(c, diagnosis, options);
 }
 
 /** Cases available for one diagnosis under the given options. */
@@ -224,12 +283,9 @@ export function casesForDiagnosis(
   diagnosis: string,
   options: PoolOptions
 ): SessionCase[] {
-  const aliases = options.conditions ? findCondition(options.conditions, diagnosis)?.aliases : null;
-  return allCases.filter((c) => {
-    if (c.source === 'supplemental' && !options.supplemental) return false;
-    if (c.source === 'library' && !c.released && !options.unreleased) return false;
-    return caseMatchesDiagnosis(c.answer, diagnosis, { related: options.related, aliases });
-  });
+  return candidatesForDiagnosis(allCases, diagnosis, options.conditions).filter((c) =>
+    isCaseSelected(c, diagnosis, options)
+  );
 }
 
 // ============================================
@@ -297,6 +353,8 @@ export function buildSession(
     related: settings.related,
     unreleased: settings.unreleased,
     supplemental: settings.supplemental,
+    include: settings.include,
+    exclude: settings.exclude,
     conditions,
   };
 

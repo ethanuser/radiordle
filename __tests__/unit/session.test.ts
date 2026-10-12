@@ -17,6 +17,7 @@ import type { Puzzle } from '@/lib/supabase'
 function makeCase(id: string, answer: string, overrides: Partial<SessionCase> = {}): SessionCase {
   return {
     id,
+    key: id.toUpperCase(),
     source: 'library',
     label: id,
     imageUrl: `https://example.com/${id}.png`,
@@ -63,6 +64,9 @@ describe('settings URL round-trip', () => {
       related: true,
       unreleased: true,
       supplemental: false,
+      include: ['L80', 'S2'],
+      exclude: ['L10'],
+      hideContents: false,
     })
     expect(settingsFromQuery(settingsToQuery(s))).toEqual(s)
   })
@@ -70,6 +74,19 @@ describe('settings URL round-trip', () => {
   it('encodes diagnoses as readable repeated dx params', () => {
     const q = settingsToQuery(settings({ diagnoses: [{ name: 'Pleural effusion', count: 2 }] }))
     expect(new URLSearchParams(q).getAll('dx')).toEqual(['Pleural effusion:2'])
+  })
+
+  it('defaults to typed answers with hidden contents', () => {
+    const s = settingsFromQuery('')
+    expect(s.answer).toBe('typed')
+    expect(s.hideContents).toBe(true)
+    expect(s.include).toEqual([])
+    expect(s.exclude).toEqual([])
+  })
+
+  it('ignores malformed case keys', () => {
+    expect(settingsFromQuery('inc=L80,bogus,s2,L80&exc=X1').include).toEqual(['L80', 'S2'])
+    expect(settingsFromQuery('exc=X1').exclude).toEqual([])
   })
 
   it('falls back to the four default diagnoses when no dx is given', () => {
@@ -123,6 +140,33 @@ describe('casesForDiagnosis', () => {
 
   it('can exclude supplemental cases', () => {
     expect(casesForDiagnosis(LIBRARY, 'Lung abscess', { ...base, supplemental: false }).map((c) => c.id)).toEqual(['a1'])
+  })
+})
+
+describe('include / exclude overrides', () => {
+  const base = { related: false, unreleased: false, supplemental: true }
+
+  it('excluded cases are dropped even when the filters allow them', () => {
+    expect(casesForDiagnosis(LIBRARY, 'Pneumonia', { ...base, exclude: ['P1'] }).map((c) => c.id)).toEqual(['p2'])
+  })
+
+  it('included cases are used even when the filters would skip them', () => {
+    // u1 is unreleased; p3 is a related answer
+    expect(casesForDiagnosis(LIBRARY, 'Empyema', { ...base, include: ['U1'] }).map((c) => c.id)).toEqual(['m1', 'u1'])
+    expect(casesForDiagnosis(LIBRARY, 'Pneumonia', { ...base, include: ['P3'] }).map((c) => c.id)).toEqual([
+      'p1',
+      'p2',
+      'p3',
+    ])
+  })
+
+  it('an include never pulls in a case from an unrelated diagnosis', () => {
+    expect(casesForDiagnosis(LIBRARY, 'Empyema', { ...base, include: ['A1'] }).map((c) => c.id)).toEqual(['m1'])
+  })
+
+  it('buildSession honours the overrides', () => {
+    const s = settings({ diagnoses: [{ name: 'Pneumonia', count: 5 }], exclude: ['P1', 'P2'], include: ['P3'] })
+    expect(buildSession(s, LIBRARY, 'seed').items.map((i) => i.case.id)).toEqual(['p3'])
   })
 })
 

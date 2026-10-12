@@ -2,17 +2,20 @@
 
 import { useEffect, useMemo, useState } from 'react';
 import Link from 'next/link';
+import CasePicker from './CasePicker';
 import { useSearchParams } from 'next/navigation';
 import { BASE_PATH } from '@/lib/paths';
 import { X, Copy, Play, RefreshCw } from 'lucide-react';
 import {
   casesForDiagnosis,
   findCondition,
+  passesFilters,
   normalizeName,
   randomSeed,
   settingsFromQuery,
   settingsToQuery,
   MAX_CASES_PER_DIAGNOSIS,
+  type SessionCase,
   type SessionSettings,
 } from '@/lib/session';
 import { MAX_GUESSES } from '@/lib/gameLogic';
@@ -49,9 +52,11 @@ export default function SessionSetup() {
       related: settings.related,
       unreleased: settings.unreleased,
       supplemental: settings.supplemental,
+      include: settings.include,
+      exclude: settings.exclude,
       conditions: library.conditions,
     }),
-    [settings.related, settings.unreleased, settings.supplemental, library.conditions]
+    [settings.related, settings.unreleased, settings.supplemental, settings.include, settings.exclude, library.conditions]
   );
 
   const availability = useMemo(
@@ -96,6 +101,18 @@ export default function SessionSetup() {
     setSettings((s) => ({ ...s, diagnoses: [...s.diagnoses, { name, count: 1 }] }));
     setNewDx('');
   };
+
+  // Ticking/unticking a case records an override only when it differs from
+  // what the case-source filters would choose on their own.
+  const toggleCase = (c: SessionCase, diagnosis: string, selected: boolean) =>
+    setSettings((s) => {
+      const byDefault = passesFilters(c, diagnosis, { ...poolOptions, include: [], exclude: [] });
+      const include = s.include.filter((k) => k !== c.key);
+      const exclude = s.exclude.filter((k) => k !== c.key);
+      if (selected && !byDefault) include.push(c.key);
+      if (!selected && byDefault) exclude.push(c.key);
+      return { ...s, include, exclude };
+    });
 
   const copyLink = () => {
     copyText(sessionUrl(query)).then(() => {
@@ -149,7 +166,11 @@ export default function SessionSetup() {
                   <tr key={d.name} className="border-b border-rule last:border-b-0">
                     <td className="px-3 py-2 text-ink">
                       {d.name}
-                      {d.count === 0 && <span className="ml-2 font-mono text-[11px] text-ink-faint">CHOICE ONLY</span>}
+                      {d.count === 0 && (
+                        <span className="ml-2 font-mono text-[11px] text-ink-faint">
+                          {settings.answer === 'choice' ? 'CHOICE ONLY' : 'NOT USED'}
+                        </span>
+                      )}
                     </td>
                     <td className="px-3 py-2 font-mono text-xs text-ink-muted whitespace-nowrap">
                       {!ready ? (
@@ -217,13 +238,68 @@ export default function SessionSetup() {
             Add
           </button>
         </div>
-        <p className="text-xs text-ink-faint">
-          Every listed diagnosis is an answer choice. Set a count of 0 to keep one as a distractor without
-          cases.
+        <p className="text-xs lg:text-sm text-ink-faint">
+          {settings.answer === 'choice'
+            ? 'Every listed diagnosis is an answer choice; a count of 0 keeps one as a distractor.'
+            : 'Students type their answer and search the full diagnosis list.'}{' '}
+          Cases are drawn at random from each diagnosis&apos;s selected cases (see Cases below).
         </p>
       </Section>
 
-      <Section index={2} title="Order & repetition">
+      <Section index={2} title="Case sources">
+        <Check
+          checked={settings.supplemental}
+          onChange={(supplemental) => update({ supplemental })}
+          label="Include supplemental cases"
+          description="Bundled, openly licensed images (Wikimedia Commons) for pneumonia, pleural effusion, empyema and lung abscess."
+        />
+        <Check
+          checked={settings.related}
+          onChange={(related) => update({ related })}
+          label="Include related diagnoses"
+          description="Also use library cases whose answer contains the diagnosis name, e.g. “Lobar pneumonia” under “Pneumonia”."
+        />
+        <Check
+          checked={settings.unreleased}
+          onChange={(unreleased) => update({ unreleased })}
+          label="Include unreleased daily puzzles"
+          description="Library puzzles that have not appeared as a daily puzzle yet (spoils future dailies)."
+        />
+      </Section>
+
+      <Section index={3} title="Cases">
+        <p className="text-xs lg:text-sm text-ink-faint -mt-1">
+          Every case that could belong to each diagnosis. Ticks start from the case sources above; tick or untick
+          individual cases to include or exclude them. Visible to you only — students never see this list.
+        </p>
+        {!ready ? (
+          <p className="font-mono text-xs text-ink-faint">LOADING…</p>
+        ) : (
+          <div className="space-y-2">
+            {settings.diagnoses.map((d) => (
+              <CasePicker
+                key={d.name}
+                diagnosis={d.name}
+                cases={library.cases}
+                conditions={library.conditions}
+                options={poolOptions}
+                onToggle={(c, selected) => toggleCase(c, d.name, selected)}
+              />
+            ))}
+          </div>
+        )}
+        {(settings.include.length > 0 || settings.exclude.length > 0) && (
+          <button
+            type="button"
+            onClick={() => update({ include: [], exclude: [] })}
+            className="text-xs lg:text-sm text-ink-muted hover:text-ink underline underline-offset-4"
+          >
+            Clear case overrides ({settings.include.length} added, {settings.exclude.length} removed)
+          </button>
+        )}
+      </Section>
+
+      <Section index={4} title="Order & repetition">
         <Field label="Case order">
           <Segmented
             ariaLabel="Case order"
@@ -273,15 +349,15 @@ export default function SessionSetup() {
         </Field>
       </Section>
 
-      <Section index={3} title="Answering">
+      <Section index={5} title="Answering & display">
         <Field label="Answer format">
           <Segmented
             ariaLabel="Answer format"
             value={settings.answer}
             onChange={(answer) => update({ answer })}
             options={[
-              { value: 'choice', label: 'Multiple choice' },
               { value: 'typed', label: 'Type the diagnosis' },
+              { value: 'choice', label: 'Multiple choice' },
             ]}
           />
         </Field>
@@ -291,6 +367,14 @@ export default function SessionSetup() {
             value={settings.tries}
             onChange={(tries) => update({ tries })}
             options={Array.from({ length: MAX_GUESSES }, (_, i) => ({ value: i + 1, label: String(i + 1) }))}
+          />
+        </Field>
+        <Field label="Start screen" hint="What students see before the first case.">
+          <Check
+            checked={settings.hideContents}
+            onChange={(hideContents) => update({ hideContents })}
+            label="Hide the diagnoses and case counts"
+            description="Shows only the number of cases and the rules. The summary at the end still lists everything."
           />
         </Field>
         <Field label="Findings (hints)">
@@ -305,27 +389,6 @@ export default function SessionSetup() {
             ]}
           />
         </Field>
-      </Section>
-
-      <Section index={4} title="Case sources">
-        <Check
-          checked={settings.supplemental}
-          onChange={(supplemental) => update({ supplemental })}
-          label="Include supplemental cases"
-          description="Bundled, openly licensed images (Wikimedia Commons) for pneumonia, pleural effusion, empyema and lung abscess."
-        />
-        <Check
-          checked={settings.related}
-          onChange={(related) => update({ related })}
-          label="Include related diagnoses"
-          description="Also use library cases whose answer contains the diagnosis name, e.g. “Lobar pneumonia” under “Pneumonia”."
-        />
-        <Check
-          checked={settings.unreleased}
-          onChange={(unreleased) => update({ unreleased })}
-          label="Include unreleased daily puzzles"
-          description="Library puzzles that have not appeared as a daily puzzle yet (spoils future dailies)."
-        />
       </Section>
 
       {/* Footer: summary + actions */}
@@ -354,9 +417,9 @@ export default function SessionSetup() {
           </button>
         </div>
         <div className="flex flex-wrap gap-2 justify-end">
-          <Link href="/session" onClick={() => setSettings(settingsFromQuery(''))} className={SECONDARY_BUTTON}>
+          <button type="button" onClick={() => setSettings(settingsFromQuery(''))} className={SECONDARY_BUTTON}>
             Reset
-          </Link>
+          </button>
           {canStart ? (
             <Link href={`/session/play?${query}`} className={PRIMARY_BUTTON}>
               <Play size={15} />

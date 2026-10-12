@@ -1,6 +1,7 @@
 import type { Metadata } from "next";
 import { IBM_Plex_Sans, IBM_Plex_Mono } from "next/font/google";
 import "./globals.css";
+import CookieConsent from "@/components/CookieConsent";
 import { SITE_URL, withBasePath } from "@/lib/paths";
 
 // Body + display font — a sober, report-like grotesque
@@ -20,7 +21,7 @@ const plexMono = IBM_Plex_Mono({
 });
 
 const DESCRIPTION =
-  "Radiology teaching sessions: identify the diagnosis from the image with progressive findings. Configure a set of cases and share it as a link.";
+  "Daily radiology puzzles and configurable teaching sessions: identify the diagnosis from the image with progressive findings.";
 
 export const metadata: Metadata = {
   title: {
@@ -73,6 +74,7 @@ export default function RootLayout({
         suppressHydrationWarning
       >
         {children}
+        <CookieConsent />
       </body>
     </html>
   );

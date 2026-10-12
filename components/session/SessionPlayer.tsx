@@ -125,15 +125,21 @@ export default function SessionPlayer() {
       <Sheet label="Game Session" title={`${items.length} case${items.length === 1 ? '' : 's'}`}>
         <dl className="grid grid-cols-[140px_1fr] lg:grid-cols-[200px_1fr] border border-rule text-sm lg:text-xl">
           <Row term="Diagnoses">
-            {settings.diagnoses.map((d) => (
-              <span key={d.name} className="block">
-                {d.name}
-                <span className="font-mono text-xs text-ink-faint">
-                  {' '}
-                  {d.count > 0 ? `× ${built.items.filter((it) => it.diagnosis === d.name).length}` : '(choice only)'}
-                </span>
-              </span>
-            ))}
+            {settings.hideContents
+              ? 'Hidden until the end of the session'
+              : settings.diagnoses.map((d) => (
+                  <span key={d.name} className="block">
+                    {d.name}
+                    <span className="font-mono text-xs text-ink-faint">
+                      {' '}
+                      {d.count > 0
+                        ? `× ${built.items.filter((it) => it.diagnosis === d.name).length}`
+                        : settings.answer === 'choice'
+                          ? '(choice only)'
+                          : ''}
+                    </span>
+                  </span>
+                ))}
           </Row>
           <Row term="Order">
             {{ random: 'Random', grouped: 'Grouped by diagnosis', interleaved: 'Interleaved' }[settings.order]}
@@ -150,8 +156,11 @@ export default function SessionPlayer() {
         </dl>
         {built.shortfalls.length > 0 && (
           <p className="text-xs text-warning">
-            Fewer cases than requested for:{' '}
-            {built.shortfalls.map((s) => `${s.diagnosis} (${s.available}/${s.requested})`).join(', ')}.
+            {settings.hideContents
+              ? 'Fewer cases were available than requested.'
+              : `Fewer cases than requested for: ${built.shortfalls
+                  .map((s) => `${s.diagnosis} (${s.available}/${s.requested})`)
+                  .join(', ')}.`}
             {!settings.repeats && ' Allow repeats to reuse cases.'}
           </p>
         )}

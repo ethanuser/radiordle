@@ -89,6 +89,7 @@ const CASES: SupplementalCaseInput[] = [
 
 export const SUPPLEMENTAL_CASES: SessionCase[] = CASES.map((c) => ({
   id: `supplemental-${c.id}`,
+  key: c.id,
   source: 'supplemental',
   label: `Supplemental ${c.id}`,
   imageUrl: withBasePath(c.image),

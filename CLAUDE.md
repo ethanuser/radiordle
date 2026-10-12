@@ -4,7 +4,7 @@ This file provides guidance to Claude Code (claude.ai/code) when working with co
 
 ## Project Overview
 
-A teaching adaptation of Radiordle (the daily radiology puzzle game by Kishan Asokan and Tanmay Singh). This fork has **no daily game**: it reads cases from the Radiordle Supabase library (read-only) plus a few bundled supplemental cases, and runs them as instructor-configured **Game Sessions** for classes (e.g. BiCEP: pneumonia vs. pleural effusion vs. empyema vs. lung abscess).
+A fork of Radiordle (the daily radiology puzzle game by Kishan Asokan and Tanmay Singh). It shows the same daily puzzle and archive as radiordle.org and adds instructor-configured **Game Sessions** for classes (e.g. BiCEP: pneumonia vs. pleural effusion vs. empyema vs. lung abscess). It reads the Radiordle Supabase library **read-only** — it never submits results, feedback or schedule entries.
 
 Live: https://ethanuser.github.io/radiordle
 
@@ -21,19 +21,20 @@ pnpm test                 # Vitest
 ## Architecture
 
 - **Static export** (`next.config.ts`: `output: 'export'`, `trailingSlash`, `basePath` from `NEXT_PUBLIC_BASE_PATH`). Deployed to GitHub Pages by `.github/workflows/pages.yml` with `NEXT_PUBLIC_BASE_PATH=/radiordle`. No server code, no API routes.
-- **Routes**: `/` and `/session` = session setup; `/session/play` = play a session; `/about`.
-- **Read-only backend** (`lib/supabase.ts`): `db()` exposes only `.from(table).select('*')`. The app reads `puzzles` (non-draft) and `conditions`, and must never write to the shared database. Supabase is optional at build time (`isSupabaseConfigured`); without credentials only supplemental cases are used.
-- **No browser storage**: nothing is written to localStorage, cookies or IndexedDB; session progress is in memory.
+- **Routes**: `/` = today's daily puzzle (`components/DailyGame.tsx` → `GamePage`/`GameClient`); `/archive`, `/archive/play/?day=N`; `/session` = session setup; `/session/play` = play a session; `/about`; `/install`.
+- **Read-only backend** (`lib/supabase.ts`): `db()` exposes only `.from(table).select(...)`. The app reads `puzzles`, `conditions`, `puzzle_schedule` and the `game_stats_*` views, and must never write to the shared database (no result submission, feedback or schedule writes). `getPuzzleForDay` returns the scheduled puzzle, or the one the selection algorithm would pick, without writing. Supabase is optional at build time (`isSupabaseConfigured`).
+- **Daily game state** lives in localStorage (`lib/localStorage.ts`, keys `radiordle_*`) behind the consent banner (`CookieConsent`). Game Session progress is in memory only.
 - Root-relative public assets used in `<Image>`/`<img>` must go through `withBasePath()` (`lib/paths.ts`).
 
 ### Game Session
 
-- `lib/session.ts` (pure, unit-tested): settings ⇄ URL query (`settingsToQuery` / `settingsFromQuery`), case matching (`caseMatchesDiagnosis`, `casesForDiagnosis`), seeded shuffling (`createRng`), `buildSession` (counts, repeats, order), `gradeGuess`.
+- `lib/session.ts` (pure, unit-tested): settings ⇄ URL query (`settingsToQuery` / `settingsFromQuery`), case matching (`candidatesForDiagnosis`, `passesFilters`, `isCaseSelected`, `casesForDiagnosis`), seeded shuffling (`createRng`), `buildSession` (counts, repeats, order), `gradeGuess`.
+- Cases have short keys (`L<puzzle_number>`, `S<n>`). The setup page's case picker (`CasePicker.tsx`) records per-case overrides in `inc` / `exc`.
 - `lib/supplementalCases.ts`: bundled cases (images in `public/cases/`, Wikimedia Commons, credited per case).
 - `components/session/`: `SessionSetup` (mirrors settings into the URL), `SessionPlayer` (intro → cases → summary), `SessionCaseView` (image + report panel; keys 1–9 choose, Enter/→ next), `useSessionLibrary` (loads library + supplemental).
 - Library puzzles that have not yet run as a daily (`last_shown_day` < 0 or in the future, not `retired`) are excluded unless `unreleased=1`, so sessions don't spoil upcoming dailies.
 
-URL params: `dx=Name:count` (repeatable; count 0 = choice only), `order=random|grouped|interleaved`, `repeats=0|1`, `tries=1-5`, `hints=progressive|upfront|off`, `answer=choice|typed`, `seed`, `related=1`, `unreleased=1`, `supplemental=0`.
+URL params: `dx=Name:count` (repeatable), `order=random|grouped|interleaved`, `repeats=0|1`, `tries=1-5`, `hints=progressive|upfront|off`, `answer=typed|choice` (default typed), `hide=1|0` (hide diagnoses/counts on the start screen; default 1), `inc=L80,S1` / `exc=L10` (per-case overrides), `seed`, `related=1`, `unreleased=1`, `supplemental=0`.
 
 ### Visual style
 
@@ -42,13 +43,16 @@ Flat "radiology report" look: neutral near-black palette, IBM Plex Sans/Mono, sq
 ## Database (read-only; owned by the Radiordle authors)
 
 ```
-conditions: id, name, category, aliases[]
-puzzles:    id, puzzle_number, image_url, annotated_image_url, answer, status ('active'|'retired'|'draft'),
-            last_shown_day (-1 = never shown), hint_1..hint_4, citation, learn_link, condition_description
+conditions:      id, name, category, aliases[]
+puzzles:         id, puzzle_number, image_url, annotated_image_url, answer, status ('active'|'retired'|'draft'),
+                 last_shown_day (-1 = never shown), hint_1..hint_4, citation, learn_link, condition_description
+puzzle_schedule: day_number, puzzle_id, is_manual
+game_stats_overall / game_stats_guess_distribution / game_stats_by_puzzle /
+game_stats_guess_distribution_by_puzzle: community stats views
 ```
 
-`lib/gameLogic.ts` keeps `getDayNumber()` (EST, epoch Dec 29 2025) to decide which puzzles are already released, and `checkAnswer()` for typed answers.
+`lib/gameLogic.ts`: `getDayNumber()` (America/New_York, epoch Dec 29 2025 = day 0; shown as day + 1), `checkAnswer()` (correct / partial / incorrect), `MAX_GUESSES = 5`.
 
 ## Testing
 
-Vitest + Testing Library (jsdom via `// @vitest-environment jsdom`). Tests in `__tests__/unit` (gameLogic, session, supabase pure helpers) and `__tests__/component` (DiagnosisAutocomplete). Supabase is mocked with `vi.mock('@supabase/supabase-js')`; set env vars in `vi.hoisted()`.
+Vitest + Testing Library (jsdom via `// @vitest-environment jsdom`). Tests in `__tests__/unit` (gameLogic, session, supabase pure helpers), `__tests__/integration` (localStorage) and `__tests__/component` (GameClient, ArchiveBrowser, CookieConsent, DiagnosisAutocomplete). GameClient renders desktop + mobile layouts, so use `getAllBy*` and index `[0]`. Supabase is mocked with `vi.mock('@supabase/supabase-js')`; set env vars in `vi.hoisted()`.
