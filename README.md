@@ -44,5 +44,5 @@ https://ethanuser.github.io/radiordle/session/play/?dx=Pneumonia:1&dx=Pleural%20
 | `unreleased` | `1` | Include library puzzles not yet shown as a daily puzzle |
 | `supplemental` | `0` | Exclude the bundled supplemental cases |
 
-Cases come from the Supabase `puzzles` table plus the supplemental cases in `lib/supplementalCases.ts` (images in `public/cases/`, openly licensed from Wikimedia Commons and credited on each case). Nothing is written back to the database.
+Cases come from the Supabase `puzzles` table plus the supplemental cases in `lib/supplementalCases.ts` (images in `public/cases/`, openly licensed from Radiopaedia and Wikimedia Commons and credited on each case). Nothing is written back to the database.
 

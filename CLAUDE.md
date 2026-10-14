@@ -30,7 +30,8 @@ pnpm test                 # Vitest
 
 - `lib/session.ts` (pure, unit-tested): settings ⇄ URL query (`settingsToQuery` / `settingsFromQuery`), case matching (`candidatesForDiagnosis`, `passesFilters`, `isCaseSelected`, `casesForDiagnosis`), seeded shuffling (`createRng`), `buildSession` (counts, repeats, order), `gradeGuess`.
 - Cases have short keys (`L<puzzle_number>`, `S<n>`). The setup page's case picker (`CasePicker.tsx`) records per-case overrides in `inc` / `exc`.
-- `lib/supplementalCases.ts`: bundled cases (images in `public/cases/`, Wikimedia Commons, credited per case).
+- `lib/supplementalCases.ts`: bundled cases (images in `public/cases/`, credited per case with author, source and license).
+- **New supplemental cases: prefer Radiopaedia** (cases are CC BY-NC-SA 3.0; cite as "Case courtesy of <author>, Radiopaedia.org, rID: <id>"). Choose clear, classic, unannotated images suitable for students. radiopaedia.org pages are behind a Cloudflare bot check, so open them in a browser; the image CDN (`prod-images-static.radiopaedia.org/images/<id>/<name>_jumbo.jpeg`) downloads with curl. Use the case's own history for the first hint and set `vignetteFromSource: true`.
 - `components/session/`: `SessionSetup` (mirrors settings into the URL), `SessionPlayer` (intro → cases → summary), `SessionCaseView` (image + report panel; keys 1–9 choose, Enter/→ next), `useSessionLibrary` (loads library + supplemental).
 - Library puzzles that have not yet run as a daily (`last_shown_day` < 0 or in the future, not `retired`) are excluded unless `unreleased=1`, so sessions don't spoil upcoming dailies.
 

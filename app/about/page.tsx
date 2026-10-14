@@ -47,7 +47,7 @@ const FEATURES: { title: string; text: string }[] = [
   },
   {
     title: 'Supplemental cases',
-    text: 'A small set of openly licensed (Wikimedia Commons) cases for pneumonia, pleural effusion, empyema and lung abscess, credited on each case.',
+    text: 'A small set of openly licensed cases (Radiopaedia, Wikimedia Commons) for pneumonia, pleural effusion, empyema and lung abscess, credited on each case.',
   },
   {
     title: 'Static and read-only',

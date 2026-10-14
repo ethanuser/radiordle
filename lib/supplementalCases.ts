@@ -6,9 +6,10 @@ import { withBasePath } from './paths';
  *
  * These cover the BiCEP chest-infection set (pneumonia, pleural effusion,
  * empyema, lung abscess) so Game Session works even without the Supabase
- * library. All images are openly licensed from Wikimedia Commons; the license
- * and author are shown with each case. The clinical vignettes (first hint) are
- * illustrative teaching context, not the source patients' histories.
+ * library. Images are openly licensed (Wikimedia Commons, Radiopaedia CC BY-NC-SA);
+ * the license and author are shown with each case. Unless a case is marked
+ * `vignetteFromSource`, its clinical vignette (first hint) is illustrative
+ * teaching context, not the source patient's history.
  */
 interface SupplementalCaseInput {
   id: string;
@@ -18,6 +19,8 @@ interface SupplementalCaseInput {
   description: string;
   citation: string;
   learnLink: string;
+  /** True when the first hint is the source case's own history. */
+  vignetteFromSource?: boolean;
 }
 
 const CASES: SupplementalCaseInput[] = [
@@ -71,19 +74,20 @@ const CASES: SupplementalCaseInput[] = [
   },
   {
     id: 'S4',
-    image: '/cases/lung-abscess-right-ct.jpg',
+    image: '/cases/lung-abscess-right-cxr.jpg',
     answer: 'Lung abscess',
     hints: [
-      'Patient with weeks of fever, night sweats and foul-smelling sputum; history of alcohol use.',
-      'Axial CT (lung window): a round, gas-containing lesion in the anterior right lung.',
-      'The lesion has a thick, irregular wall and lies within the lung parenchyma — it forms acute angles with the chest wall.',
-      'Background patchy ground-glass opacities in both lungs.',
+      '40-year-old woman with fever, right-sided chest pain and cough productive of foul-smelling sputum.',
+      'PA chest radiograph: a rounded lucency with a thick wall in the right mid-to-lower zone.',
+      'The lesion contains a horizontal air–fluid level, and its margins are smooth and well defined.',
+      'The lesion lies within the lung (right middle lobe) rather than along the pleura; the left lung is clear.',
     ],
     description:
-      'A necrotic, pus-filled cavity within the lung parenchyma, classically after aspiration. Imaging shows a thick-walled cavity, often with an air–fluid level, that is spherical and forms acute angles with the chest wall — features that help distinguish it from empyema, which is lenticular, obtuse-angled and compresses the lung.',
+      'A necrotic, pus-filled cavity within the lung parenchyma, classically after aspiration. Imaging shows a thick-walled cavity, often with an air–fluid level, that is spherical and forms acute angles with the chest wall — features that help distinguish it from empyema, which is lenticular, obtuse-angled and compresses the lung. Cavitating cancer and metastases are the main differentials.',
     citation:
-      'Image: Yale Rosen — “Lung abscess – CT scan”, Wikimedia Commons, CC BY-SA 2.0.',
-    learnLink: 'https://en.wikipedia.org/wiki/Lung_abscess',
+      'Case courtesy of Abiola Ayodele, Radiopaedia.org, rID: 91614 (CC BY-NC-SA 3.0).',
+    vignetteFromSource: true,
+    learnLink: 'https://radiopaedia.org/articles/lung-abscess',
   },
 ];
 
@@ -97,7 +101,7 @@ export const SUPPLEMENTAL_CASES: SessionCase[] = CASES.map((c) => ({
   answer: c.answer,
   hints: c.hints,
   description: c.description,
-  citation: `${c.citation} Clinical vignette is illustrative.`,
+  citation: c.vignetteFromSource ? c.citation : `${c.citation} Clinical vignette is illustrative.`,
   learnLink: c.learnLink,
   released: true,
 }));
