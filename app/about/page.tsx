@@ -47,7 +47,7 @@ const FEATURES: { title: string; text: string }[] = [
   },
   {
     title: 'Supplemental cases',
-    text: 'Openly licensed X-ray and CT cases (Radiopaedia, Wikimedia Commons) for pneumonia, pleural effusion, empyema, lung abscess, pulmonary edema and atelectasis, credited on each case.',
+    text: 'Openly licensed X-ray and CT cases (Radiopaedia, Wikimedia Commons) for pneumonia, pleural effusion, empyema, lung abscess, pulmonary edema, atelectasis, pulmonary fibrosis, emphysema and lung cancer, credited on each case.',
   },
   {
     title: 'Static and read-only',

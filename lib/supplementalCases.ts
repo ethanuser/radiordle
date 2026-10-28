@@ -7,8 +7,9 @@ import { withBasePath } from './paths';
  * These cover the BiCEP chest-infection set (pneumonia, pleural effusion,
  * empyema, lung abscess), each with at least one chest radiograph and one CT,
  * plus radiographs of the main non-infectious mimics (pulmonary edema,
- * atelectasis) for the pulmonary infiltrate patterns session, so Game Session
- * works even without the Supabase library. Images are openly
+ * atelectasis) and radiographs/CTs of pulmonary fibrosis, emphysema and lung
+ * cancer for the pulmonary infiltrate patterns session, so Game Session works
+ * even without the Supabase library. Images are openly
  * licensed (Radiopaedia CC BY-NC-SA, Wikimedia Commons); the license and author
  * are shown with each case. Unless a case is marked `vignetteFromSource`, its
  * clinical vignette (first hint) is illustrative teaching context, not the
@@ -20,7 +21,10 @@ type Diagnosis =
   | 'Empyema'
   | 'Lung abscess'
   | 'Pulmonary edema'
-  | 'Atelectasis';
+  | 'Atelectasis'
+  | 'Pulmonary fibrosis'
+  | 'Emphysema'
+  | 'Lung cancer';
 type Modality = 'X-ray' | 'CT';
 
 interface SupplementalCaseInput {
@@ -65,6 +69,21 @@ const ABOUT: Record<Diagnosis, { description: string; learnLink: string }> = {
     description:
       'Collapse of lung with loss of volume, most often from resorption of air distal to an obstructed bronchus (mucus plug, tumor, foreign body) or from compression by fluid or a mass. The collapsed lobe is dense, and the fissures, hilum, hemidiaphragm, trachea and mediastinum shift toward it. Each lobe has a typical shape: the right upper lobe gives the Golden S sign when a central mass is present, the left upper lobe a hazy veil, and the left lower lobe a triangular “sail” behind the heart.',
     learnLink: 'https://radiopaedia.org/articles/lobar-collapse',
+  },
+  'Pulmonary fibrosis': {
+    description:
+      'Irreversible scarring of the lung interstitium, classically idiopathic pulmonary fibrosis (usual interstitial pneumonia pattern) in older adults; also connective tissue disease, drugs (amiodarone, bleomycin, methotrexate) and asbestos. HRCT shows subpleural, basal-predominant reticulation, traction bronchiectasis and honeycombing: clustered cystic spaces with thick shared walls. Physiology is restrictive (small lungs, normal or raised FEV1/FVC) with a low DLCO.',
+    learnLink: 'https://radiopaedia.org/articles/idiopathic-pulmonary-fibrosis',
+  },
+  Emphysema: {
+    description:
+      'Permanent enlargement of the airspaces beyond the terminal bronchioles from destruction of alveolar walls. Smoking causes centrilobular emphysema, worst in the upper lobes; alpha-1 antitrypsin deficiency causes panlobular emphysema, worst in the lower lobes. CT shows lucent areas without visible walls, often with a central dot (the centrilobular artery); radiographs show large lungs with flattened hemidiaphragms. Physiology is obstructive (low FEV1/FVC, high total lung capacity, low DLCO).',
+    learnLink: 'https://radiopaedia.org/articles/pulmonary-emphysema',
+  },
+  'Lung cancer': {
+    description:
+      'The leading cause of cancer death, strongly linked to smoking. Adenocarcinoma tends to be peripheral (and is the commonest type in non-smokers); squamous cell and small cell carcinoma tend to be central, and squamous cell tumors may cavitate. A Pancoast (superior sulcus) tumor at the apex can cause shoulder pain, Horner syndrome and rib destruction. Small cell carcinoma spreads early to mediastinal nodes and causes paraneoplastic syndromes. Imaging shows a mass or nodule, sometimes with cavitation, hilar or mediastinal adenopathy, collapse or effusion.',
+    learnLink: 'https://radiopaedia.org/articles/lung-cancer-3',
   },
 };
 
@@ -331,6 +350,109 @@ const CASES: SupplementalCaseInput[] = [
       'Left hilar opacity; no air bronchograms, meniscus or cavity.',
     ],
     citation: RADIOPAEDIA('Naim Qaqish', 82570),
+    vignetteFromSource: true,
+  },
+
+  // ---------------- Pulmonary fibrosis ----------------
+  {
+    id: 'S19',
+    image: '/cases/fibrosis-honeycombing-ct.jpg',
+    answer: 'Pulmonary fibrosis',
+    modality: 'CT',
+    hints: [
+      '70-year-old man with years of worsening exertional dyspnea, a dry cough and finger clubbing.',
+      'Axial HRCT (lung window) through the lung bases.',
+      'Clustered cystic air spaces with thick shared walls line the periphery of both lungs (honeycombing).',
+      'The remaining lung is reticular and distorted; no consolidation, mass or effusion.',
+    ],
+    citation: RADIOPAEDIA('Frank Gaillard', 35820),
+  },
+  {
+    id: 'S20',
+    image: '/cases/fibrosis-ipf-ct.jpg',
+    answer: 'Pulmonary fibrosis',
+    modality: 'CT',
+    hints: [
+      '55-year-old man on home oxygen, followed for a chronic lung disease that also affected his father and grandfather.',
+      'Axial HRCT (lung window): fine reticular lines in the periphery of both lungs, worst posteriorly.',
+      'Small subpleural cystic spaces (honeycombing) and dilated, distorted airways within the scarred lung (traction bronchiectasis).',
+      'The changes are subpleural and basal-predominant, without a nodular or ground-glass-dominant pattern.',
+    ],
+    citation: RADIOPAEDIA('Fabio Macori', 57238),
+    vignetteFromSource: true,
+  },
+
+  // ---------------- Emphysema ----------------
+  {
+    id: 'S21',
+    image: '/cases/emphysema-ct.jpg',
+    answer: 'Emphysema',
+    modality: 'CT',
+    hints: [
+      '65-year-old man with shortness of breath.',
+      'Axial CT (lung window) through the upper lobes.',
+      'Many small round lucent areas without visible walls, some with a central dot (the centrilobular artery).',
+      'Upper-lobe predominant; no honeycombing, mass or consolidation.',
+    ],
+    citation: RADIOPAEDIA('Moamer Abdulghafoor Ibrahim', 166582),
+    vignetteFromSource: true,
+  },
+  {
+    id: 'S22',
+    image: '/cases/emphysema-coronal-ct.jpg',
+    answer: 'Emphysema',
+    modality: 'CT',
+    hints: [
+      'Heavy smoker with shortness of breath on exertion.',
+      'Coronal CT (lung window).',
+      'Extensive lucent areas with imperceptible walls where lung tissue has been destroyed, worst in the upper lobes.',
+      'Large lung volumes; no honeycombing, mass or effusion.',
+    ],
+    citation: RADIOPAEDIA('Ammar Haouimi', 247105),
+    vignetteFromSource: true,
+  },
+
+  // ---------------- Lung cancer ----------------
+  {
+    id: 'S23',
+    image: '/cases/lung-cancer-cavitating-cxr.jpg',
+    answer: 'Lung cancer',
+    modality: 'X-ray',
+    hints: [
+      '60-year-old man with weight loss and cough.',
+      'PA chest radiograph: a large, irregular mass in the left mid zone next to the hilum.',
+      'The mass contains a central lucency with an air–fluid level; its wall is thick and irregular.',
+      'Weight loss and a thick, nodular cavity wall point away from a simple abscess.',
+    ],
+    citation: RADIOPAEDIA('Frank Gaillard', 19639),
+    vignetteFromSource: true,
+  },
+  {
+    id: 'S24',
+    image: '/cases/lung-cancer-pancoast-cxr.jpg',
+    answer: 'Lung cancer',
+    modality: 'X-ray',
+    hints: [
+      '55-year-old man with four weeks of worsening right shoulder and chest pain; his wife has noticed his right eyelid drooping.',
+      'PA chest radiograph: an opacity at the right lung apex.',
+      'Coarse lines extend from it down to an elevated right hilum, and the right first rib is eroded.',
+      'Both lungs are hyperinflated and lucent (background COPD).',
+    ],
+    citation: RADIOPAEDIA('Craig Hacking', 73294),
+    vignetteFromSource: true,
+  },
+  {
+    id: 'S25',
+    image: '/cases/lung-cancer-small-cell-ct.jpg',
+    answer: 'Lung cancer',
+    modality: 'CT',
+    hints: [
+      '45-year-old woman, a smoker, with six months of cough, a hoarse voice and difficulty swallowing, and two months of weight loss.',
+      'Coronal contrast-enhanced CT of the chest.',
+      'Bulky lymph nodes fill and widen the mediastinum around the central vessels and airways.',
+      'An abnormality at the left lung apex and a small pericardial effusion.',
+    ],
+    citation: RADIOPAEDIA('Liam Pugh', 57802),
     vignetteFromSource: true,
   },
 ];

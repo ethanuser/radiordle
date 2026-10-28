@@ -25,20 +25,22 @@ describe('supplemental cases', () => {
     expect(labels.filter((l) => l.endsWith('· X-ray')).length).toBeGreaterThanOrEqual(2)
   })
 
+  it.each(['Pulmonary fibrosis', 'Emphysema', 'Lung cancer'])('%s has at least two cases', (dx) => {
+    expect(SUPPLEMENTAL_CASES.filter((c) => c.answer === dx).length).toBeGreaterThanOrEqual(2)
+  })
+
   it('fills the pulmonary infiltrates session without the library', () => {
     // Link used in the BiCEP pulmonary infiltrate patterns slides (README).
     const query =
-      'dx=Pneumonia%3A2&dx=Pulmonary+edema%3A1&dx=Atelectasis%3A1&dx=Lung+abscess%3A1&dx=Empyema%3A1' +
-      '&dx=Pleural+effusion%3A1&dx=Lung+cancer%3A0&dx=Emphysema%3A0&dx=COPD%3A0&dx=Normal%3A0' +
+      'dx=Pneumonia%3A1&dx=Pulmonary+edema%3A1&dx=Atelectasis%3A1&dx=Pulmonary+fibrosis%3A2&dx=Emphysema%3A2' +
+      '&dx=Lung+cancer%3A2&dx=Pleural+effusion%3A0&dx=Lung+abscess%3A0&dx=Sarcoidosis%3A0&dx=Normal%3A0' +
       '&order=random&repeats=0&tries=3&hints=progressive&answer=choice' +
       '&seed=infiltrates&exc=S5%2CS6%2CS7%2CS10%2CS11&hide=1'
     const settings = settingsFromQuery(query)
     const { items, shortfalls } = buildSession(settings, SUPPLEMENTAL_CASES, settings.seed!)
     expect(shortfalls).toEqual([])
-    expect(items).toHaveLength(7)
-    expect(settings.diagnoses.map((d) => d.name)).toEqual(
-      expect.arrayContaining(['Lung cancer', 'Emphysema', 'COPD', 'Normal'])
-    )
+    expect(items).toHaveLength(9)
+    expect(settings.diagnoses).toHaveLength(10)
     for (const item of items) expect(settings.exclude).not.toContain(item.case.key)
   })
 
