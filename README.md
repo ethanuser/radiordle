@@ -29,10 +29,10 @@ Optional `.env.local` with `NEXT_PUBLIC_SUPABASE_URL` / `NEXT_PUBLIC_SUPABASE_AN
 https://ethanuser.github.io/radiordle/session/play/?dx=Pneumonia:1&dx=Pleural%20effusion:1&dx=Empyema:1&dx=Lung%20abscess:1&order=random&repeats=0&tries=3&hints=progressive&answer=typed&hide=1
 ```
 
-The BiCEP pulmonary infiltrate patterns learning issue uses this session: seven multiple-choice cases, with lung cancer, emphysema and COPD as extra answer choices (count 0); the cases shown on the slides are excluded, and the fixed seed gives everyone the same order:
+The BiCEP pulmonary infiltrate patterns learning issue uses this session: seven multiple-choice cases, with lung cancer, emphysema, COPD and normal as extra answer choices (count 0); the cases shown on the slides are excluded, and the fixed seed gives everyone the same order:
 
 ```
-https://ethanuser.github.io/radiordle/session/play/?dx=Pneumonia%3A2&dx=Pulmonary+edema%3A1&dx=Atelectasis%3A1&dx=Lung+abscess%3A1&dx=Empyema%3A1&dx=Pleural+effusion%3A1&dx=Lung+cancer%3A0&dx=Emphysema%3A0&dx=COPD%3A0&order=random&repeats=0&tries=3&hints=progressive&answer=choice&seed=infiltrates&exc=S5%2CS6%2CS7%2CS10%2CS11&hide=1
+https://ethanuser.github.io/radiordle/session/play/?dx=Pneumonia%3A2&dx=Pulmonary+edema%3A1&dx=Atelectasis%3A1&dx=Lung+abscess%3A1&dx=Empyema%3A1&dx=Pleural+effusion%3A1&dx=Lung+cancer%3A0&dx=Emphysema%3A0&dx=COPD%3A0&dx=Normal%3A0&order=random&repeats=0&tries=3&hints=progressive&answer=choice&seed=infiltrates&exc=S5%2CS6%2CS7%2CS10%2CS11&hide=1
 ```
 
 | Param | Values | Meaning |

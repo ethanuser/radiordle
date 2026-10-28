@@ -88,7 +88,7 @@ export default function SessionCaseView({
     return [...conditions, ...extra].sort((a, b) => a.name.localeCompare(b.name));
   }, [conditions, choices]);
 
-  // Keyboard: 1–9 picks a choice; Enter / → moves on once the case is done
+  // Keyboard: 1–9 and 0 (the tenth) pick a choice; Enter / → moves on once the case is done
   const handleKey = useCallback(
     (e: KeyboardEvent) => {
       const target = e.target as HTMLElement | null;
@@ -101,8 +101,8 @@ export default function SessionCaseView({
         }
         return;
       }
-      if (settings.answer === 'choice' && /^[1-9]$/.test(e.key)) {
-        const choice = choices[Number(e.key) - 1];
+      if (settings.answer === 'choice' && /^[0-9]$/.test(e.key)) {
+        const choice = choices[e.key === '0' ? 9 : Number(e.key) - 1];
         if (choice && !record.guesses.includes(choice)) onGuess(choice);
       }
     },
@@ -237,7 +237,7 @@ export default function SessionCaseView({
                             : 'border-rule-strong text-ink hover:bg-ink hover:text-page-bg'
                         }`}
                       >
-                        {i < 9 && <span className="font-mono text-xs lg:text-sm opacity-60">{i + 1}</span>}
+                        {i < 10 && <span className="font-mono text-xs lg:text-sm opacity-60">{(i + 1) % 10}</span>}
                         <span className="text-[15px] lg:text-xl 2xl:text-2xl">{choice}</span>
                       </button>
                     );
