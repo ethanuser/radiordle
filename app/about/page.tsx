@@ -100,6 +100,18 @@ export default function AboutPage() {
               </p>
             </AboutCard>
 
+            <AboutCard title="Music">
+              <p>
+                The optional Halloween music is Camille Saint-Saëns, <em>Danse Macabre</em>, performed by Kevin MacLeod (
+                <ExtLink href="https://incompetech.com">incompetech.com</ExtLink>), licensed under{' '}
+                <ExtLink href="https://creativecommons.org/licenses/by/3.0/">CC BY 3.0</ExtLink>, via{' '}
+                <ExtLink href="https://commons.wikimedia.org/wiki/File:Danse_Macabre_(ISRC_USUAN1100546).mp3">
+                  Wikimedia Commons
+                </ExtLink>
+                ; converted to a smaller MP3.
+              </p>
+            </AboutCard>
+
             <section className="border border-rule p-5">
               <h2 className="report-label mb-2">Disclaimer</h2>
               <p className="text-ink-muted text-sm leading-relaxed">

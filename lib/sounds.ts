@@ -48,11 +48,8 @@ export function subscribeSound(listener: () => void): () => void {
   return () => listeners.delete(listener);
 }
 
-/**
- * The page's shared AudioContext (also used by lib/music.ts). Created lazily
- * inside a user gesture (a guess or a click), which browsers require.
- */
-export function audioContext(): AudioContext | null {
+/** Created lazily inside a user gesture (a guess), which browsers require. */
+function audioContext(): AudioContext | null {
   if (typeof window === 'undefined') return null;
   const Ctor = window.AudioContext ?? (window as unknown as { webkitAudioContext?: typeof AudioContext }).webkitAudioContext;
   if (!Ctor) return null;
@@ -62,19 +59,12 @@ export function audioContext(): AudioContext | null {
 }
 
 /** A bell-like tone: a sine with a quieter octave overtone and a fast decay. */
-export function bell(
-  ctx: AudioContext,
-  freq: number,
-  start: number,
-  length: number,
-  volume: number,
-  destination: AudioNode = ctx.destination
-) {
+function bell(ctx: AudioContext, freq: number, start: number, length: number, volume: number) {
   const out = ctx.createGain();
   out.gain.setValueAtTime(0.0001, start);
   out.gain.exponentialRampToValueAtTime(volume, start + 0.01);
   out.gain.exponentialRampToValueAtTime(0.0001, start + length);
-  out.connect(destination);
+  out.connect(ctx.destination);
   for (const [mult, level] of [[1, 1], [2, 0.25]] as const) {
     const osc = ctx.createOscillator();
     const g = ctx.createGain();
