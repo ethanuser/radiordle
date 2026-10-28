@@ -6,6 +6,7 @@ import { BarChart3, Info, Archive, Menu, Download, ClipboardList, CalendarDays }
 import GlassIconButton from './ui/GlassIconButton';
 import AccentButton from './ui/AccentButton';
 import SoundToggle from './ui/SoundToggle';
+import { HangingSkeleton, SkullMark, useHalloween } from './ui/Halloween';
 
 /**
  * Top navigation bar — a flat header strip like a RIS/PACS worklist header.
@@ -17,6 +18,9 @@ import SoundToggle from './ui/SoundToggle';
  *     text links, the sound toggle and the primary Game Session button on the right.
  *   - Mobile (< sm): wordmark, Game Session button, sound toggle (from 360px), and a
  *     menu with the rest, including the sound toggle.
+ *
+ * From October 15 to November 1 the wordmark's crosshair becomes a skull and a
+ * small skeleton hangs from the desktop bar (see ./ui/Halloween).
  *
  * `onStats` is optional; pages without the stats modal omit it and the Stats
  * control is hidden. (There is no Feedback button: this fork never writes to
@@ -40,16 +44,18 @@ const SOUND_ICON =
   'transition-colors text-ink-muted hover:text-ink hover:border-rule hover:bg-surface';
 
 export function Wordmark({ compact = false }: { compact?: boolean }) {
+  const halloween = useHalloween();
+  const mark = compact ? 18 : 22;
   return (
     <Link href="/" aria-label="Radiordle home" className="flex items-center gap-2.5">
-      <span
-        aria-hidden="true"
-        className="relative flex-shrink-0 border border-ink"
-        style={{ width: compact ? 18 : 22, height: compact ? 18 : 22 }}
-      >
-        <span className="absolute left-1/2 top-[3px] bottom-[3px] w-px -translate-x-1/2 bg-ink" />
-        <span className="absolute top-1/2 left-[3px] right-[3px] h-px -translate-y-1/2 bg-ink" />
-      </span>
+      {halloween ? (
+        <SkullMark size={mark} />
+      ) : (
+        <span aria-hidden="true" className="relative flex-shrink-0 border border-ink" style={{ width: mark, height: mark }}>
+          <span className="absolute left-1/2 top-[3px] bottom-[3px] w-px -translate-x-1/2 bg-ink" />
+          <span className="absolute top-1/2 left-[3px] right-[3px] h-px -translate-y-1/2 bg-ink" />
+        </span>
+      )}
       <span
         className={`font-mono font-semibold text-ink tracking-[0.18em] leading-none ${
           compact ? 'text-[15px]' : 'text-[17px]'
@@ -63,12 +69,14 @@ export function Wordmark({ compact = false }: { compact?: boolean }) {
 
 export default function TopBar({ onStats }: TopBarProps) {
   const [menuOpen, setMenuOpen] = useState(false);
+  const halloween = useHalloween();
 
   return (
     <>
       {/* ---- Desktop bar ---- */}
       <div className="hidden sm:flex items-center gap-4 px-6 h-[60px] flex-shrink-0 z-[60] bg-page-bg border-b border-rule">
         <Wordmark />
+        {halloween && <HangingSkeleton />}
 
         <nav className="flex-1 flex items-center justify-end gap-1">
           <Link href="/" className={NAV_LINK}>

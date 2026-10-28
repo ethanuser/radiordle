@@ -317,3 +317,16 @@ body {
   from { opacity: 0; transform: translateY(-8px); }
   to { opacity: 1; transform: translateY(0); }
 }
+
+/* Halloween skeleton hanging from the top bar (components/ui/Halloween.tsx) */
+@keyframes halloween-sway {
+  0%, 100% { transform: rotate(-5deg); }
+  50% { transform: rotate(5deg); }
+}
+.halloween-sway {
+  transform-origin: 50% 0;
+  animation: halloween-sway 3.2s ease-in-out infinite;
+}
+@media (prefers-reduced-motion: reduce) {
+  .halloween-sway { animation: none; }
+}
