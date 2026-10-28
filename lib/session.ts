@@ -105,9 +105,15 @@ export function settingsToQuery(settings: SessionSettings): string {
 /**
  * Parses settings from a query string, falling back to defaults for anything
  * missing or invalid. With no `dx` params the default diagnoses are used.
+ *
+ * Links pasted from HTML (emails, documents, slides) sometimes arrive with
+ * `&amp;` instead of `&`, which turns `dx` into `amp;dx`; that prefix is
+ * dropped so those links still carry every setting.
  */
 export function settingsFromQuery(query: string | URLSearchParams): SessionSettings {
-  const params = typeof query === 'string' ? new URLSearchParams(query) : query;
+  const raw = typeof query === 'string' ? new URLSearchParams(query) : query;
+  const params = new URLSearchParams();
+  for (const [key, value] of raw) params.append(key.replace(/^(amp;)+/, ''), value);
 
   const diagnoses: SessionDiagnosis[] = [];
   const seen = new Set<string>();

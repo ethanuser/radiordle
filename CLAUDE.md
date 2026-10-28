@@ -25,6 +25,7 @@ pnpm test                 # Vitest
 - **Read-only backend** (`lib/supabase.ts`): `db()` exposes only `.from(table).select(...)`. The app reads `puzzles`, `conditions`, `puzzle_schedule` and the `game_stats_*` views, and must never write to the shared database (no result submission, feedback or schedule writes). `getPuzzleForDay` returns the scheduled puzzle, or the one the selection algorithm would pick, without writing. Supabase is optional at build time (`isSupabaseConfigured`).
 - **Daily game state** lives in localStorage (`lib/localStorage.ts`, keys `radiordle_*`) behind the consent banner (`CookieConsent`). Game Session progress is in memory only.
 - Root-relative public assets used in `<Image>`/`<img>` must go through `withBasePath()` (`lib/paths.ts`).
+- Answer sounds (`lib/sounds.ts`): synthesized with Web Audio (correct = two-tone chime, partial = single tone, incorrect = low buzz), played from `GameClient` and `SessionPlayer` on each graded guess; on by default, toggled by `SoundToggle` in the top bar (`radiordle_sound` in localStorage).
 
 ### Game Session
 

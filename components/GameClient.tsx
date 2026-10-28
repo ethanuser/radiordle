@@ -20,6 +20,7 @@ import {
   type GameState,
 } from '@/lib/localStorage';
 import { SITE_URL } from '@/lib/paths';
+import { playGuessSound } from '@/lib/sounds';
 
 // Toast feedback types
 type ToastType = 'correct' | 'partial' | 'incorrect' | 'copied' | null;
@@ -187,6 +188,7 @@ export default function GameClient({
       guessStartTime.current = Date.now();
 
       const result = checkAnswer(diagnosis, correctAnswer);
+      playGuessSound(result);
       const newGuesses = [...gameState.guesses, diagnosis];
       const newGuessResults = [...gameState.guessResults, result];
 

@@ -84,6 +84,19 @@ describe('settings URL round-trip', () => {
     expect(s.exclude).toEqual([])
   })
 
+  it('reads links whose & was HTML-escaped to &amp;', () => {
+    const query = 'dx=Pneumonia:2&amp;dx=Empyema:1&amp;tries=2&amp;exc=S5,S6'
+    for (const q of [query, new URLSearchParams(query), new URLSearchParams(query).toString()]) {
+      const s = settingsFromQuery(q)
+      expect(s.diagnoses).toEqual([
+        { name: 'Pneumonia', count: 2 },
+        { name: 'Empyema', count: 1 },
+      ])
+      expect(s.tries).toBe(2)
+      expect(s.exclude).toEqual(['S5', 'S6'])
+    }
+  })
+
   it('ignores malformed case keys', () => {
     expect(settingsFromQuery('inc=L80,bogus,s2,L80&exc=X1').include).toEqual(['L80', 'S2'])
     expect(settingsFromQuery('exc=X1').exclude).toEqual([])

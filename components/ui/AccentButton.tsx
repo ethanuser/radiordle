@@ -34,7 +34,7 @@ export default function AccentButton({
 }: AccentButtonProps) {
   const sizeCls = compact ? 'gap-1.5 px-3 h-8 text-[13px]' : 'gap-2 px-4 h-9 text-sm';
   const cls =
-    'inline-flex items-center justify-center font-display font-semibold uppercase tracking-[0.06em] ' +
+    'inline-flex items-center justify-center whitespace-nowrap font-display font-semibold uppercase tracking-[0.06em] ' +
     'bg-ink text-page-bg border border-ink hover:bg-white transition-colors ' +
     `${sizeCls} ${className}`.trim();
   const accessibleTitle = title ?? label;

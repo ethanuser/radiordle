@@ -5,6 +5,7 @@ import Link from 'next/link';
 import { BarChart3, Info, Archive, Menu, Download, ClipboardList, CalendarDays } from 'lucide-react';
 import GlassIconButton from './ui/GlassIconButton';
 import AccentButton from './ui/AccentButton';
+import SoundToggle from './ui/SoundToggle';
 
 /**
  * Top navigation bar — a flat header strip like a RIS/PACS worklist header.
@@ -13,8 +14,9 @@ import AccentButton from './ui/AccentButton';
  * (matching the app's dual-layout convention so the `:visible` e2e selectors
  * keep working):
  *   - Desktop (>= sm): wordmark on the left; Daily / Archive / Stats / About
- *     text links and the primary Game Session button on the right.
- *   - Mobile (< sm): wordmark, Game Session button, and a menu with the rest.
+ *     text links, the sound toggle and the primary Game Session button on the right.
+ *   - Mobile (< sm): wordmark, Game Session button, sound toggle (from 360px), and a
+ *     menu with the rest, including the sound toggle.
  *
  * `onStats` is optional; pages without the stats modal omit it and the Stats
  * control is hidden. (There is no Feedback button: this fork never writes to
@@ -31,6 +33,11 @@ const NAV_LINK =
 const MENU_ITEM =
   'flex items-center gap-3 w-full px-4 py-3 text-left text-sm font-display font-medium uppercase tracking-[0.06em] ' +
   'text-ink border-b border-rule last:border-b-0 transition-colors hover:bg-surface';
+
+// Hidden on the narrowest phones, where the bar has no room; the menu has it too.
+const SOUND_ICON =
+  'hidden min-[360px]:flex items-center justify-center w-[34px] h-[34px] border border-transparent ' +
+  'transition-colors text-ink-muted hover:text-ink hover:border-rule hover:bg-surface';
 
 export function Wordmark({ compact = false }: { compact?: boolean }) {
   return (
@@ -82,6 +89,7 @@ export default function TopBar({ onStats }: TopBarProps) {
             <Info size={15} />
             About
           </Link>
+          <SoundToggle className={NAV_LINK} />
           <span className="w-px h-6 bg-rule mx-2" aria-hidden="true" />
           <AccentButton icon={<ClipboardList size={16} />} label="Game Session" href="/session" />
         </nav>
@@ -93,6 +101,7 @@ export default function TopBar({ onStats }: TopBarProps) {
           <Wordmark compact />
           <div className="flex items-center gap-1.5">
             <AccentButton label="Game Session" compact href="/session" />
+            <SoundToggle className={SOUND_ICON} />
             <GlassIconButton label="Menu" size={34} onClick={() => setMenuOpen((m) => !m)}>
               <Menu size={20} />
             </GlassIconButton>
@@ -129,6 +138,7 @@ export default function TopBar({ onStats }: TopBarProps) {
                 <Info size={16} />
                 About
               </Link>
+              <SoundToggle className={MENU_ITEM} withLabel />
               <Link href="/install" onClick={() => setMenuOpen(false)} className={MENU_ITEM}>
                 <Download size={16} />
                 Install

@@ -9,6 +9,7 @@ import { useSessionLibrary } from './useSessionLibrary';
 import SessionCaseView, { EMPTY_RECORD, type CaseRecord } from './SessionCaseView';
 import { PRIMARY_BUTTON, SECONDARY_BUTTON } from './controls';
 import { copyText, sessionUrl } from './links';
+import { playGuessSound } from '@/lib/sounds';
 
 type Phase = 'intro' | 'case' | 'summary';
 
@@ -52,6 +53,10 @@ export default function SessionPlayer() {
     (guess: string) => {
       const item = items[index];
       if (!item) return;
+      const current = records[index] ?? EMPTY_RECORD;
+      if (current.done || current.guesses.includes(guess)) return;
+      // Graded here (not inside the state updater) so the sound plays once.
+      playGuessSound(gradeGuess(guess, item));
       updateRecord((r) => {
         if (r.done || r.guesses.includes(guess)) return r;
         const result = gradeGuess(guess, item);
@@ -62,7 +67,7 @@ export default function SessionPlayer() {
         return { guesses, results, done, solved, revealed: done && !solved };
       });
     },
-    [items, index, settings.tries, updateRecord]
+    [items, index, records, settings.tries, updateRecord]
   );
 
   const handleReveal = useCallback(() => {
