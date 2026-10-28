@@ -29,12 +29,16 @@ describe('supplemental cases', () => {
     // Link used in the BiCEP pulmonary infiltrate patterns slides (README).
     const query =
       'dx=Pneumonia%3A2&dx=Pulmonary+edema%3A1&dx=Atelectasis%3A1&dx=Lung+abscess%3A1&dx=Empyema%3A1' +
-      '&dx=Pleural+effusion%3A1&order=random&repeats=0&tries=3&hints=progressive&answer=typed' +
+      '&dx=Pleural+effusion%3A1&dx=Lung+cancer%3A0&dx=Emphysema%3A0&dx=COPD%3A0' +
+      '&order=random&repeats=0&tries=3&hints=progressive&answer=choice' +
       '&seed=infiltrates&exc=S5%2CS6%2CS7%2CS10%2CS11&hide=1'
     const settings = settingsFromQuery(query)
     const { items, shortfalls } = buildSession(settings, SUPPLEMENTAL_CASES, settings.seed!)
     expect(shortfalls).toEqual([])
     expect(items).toHaveLength(7)
+    expect(settings.diagnoses.map((d) => d.name)).toEqual(
+      expect.arrayContaining(['Lung cancer', 'Emphysema', 'COPD'])
+    )
     for (const item of items) expect(settings.exclude).not.toContain(item.case.key)
   })
 
