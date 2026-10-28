@@ -26,7 +26,7 @@ pnpm test                 # Vitest
 - **Daily game state** lives in localStorage (`lib/localStorage.ts`, keys `radiordle_*`) behind the consent banner (`CookieConsent`). Game Session progress is in memory only.
 - Root-relative public assets used in `<Image>`/`<img>` must go through `withBasePath()` (`lib/paths.ts`).
 - Answer sounds (`lib/sounds.ts`): synthesized with Web Audio (correct = two-tone chime, partial = single tone, incorrect = low buzz), played from `GameClient` and `SessionPlayer` on each graded guess; on by default, toggled by `SoundToggle` in the top bar (`radiordle_sound` in localStorage).
-- Halloween (`lib/halloween.ts`, `components/ui/Halloween.tsx`): from Oct 15 to Nov 1 (visitor's local date) the wordmark crosshair becomes a skull and a small skeleton sways from the desktop top bar (art in `public/halloween/`). Decided client-side only, never at build time.
+- Halloween (`lib/halloween.ts`, `components/ui/Halloween.tsx`): from Oct 15 to Nov 1 (visitor's local date) the wordmark crosshair becomes a skull, a small skeleton sways from the desktop top bar (art in `public/halloween/`), answer sounds switch to Halloween versions, and a music toggle plays an optional original loop (`lib/music.ts`, never autoplays). Decided client-side only, never at build time.
 
 ### Game Session
 

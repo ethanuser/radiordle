@@ -5,9 +5,15 @@
  * - partial: a single soft "pon"
  * - incorrect: a short, low "buu" buzzer
  *
+ * During the Halloween season (lib/halloween.ts) they become spooky instead:
+ * a skeleton "bone xylophone" run when correct, two bone clacks when close,
+ * and a sliding ghost "wooOOooo" when wrong.
+ *
  * Sound is on by default; the choice is kept in localStorage and shared with
  * every component through `subscribeSound` (used by `useSoundEnabled`).
  */
+import { isHalloweenSeason } from './halloween';
+
 type GuessResult = 'correct' | 'partial' | 'incorrect';
 
 const STORAGE_KEY = 'radiordle_sound';
@@ -42,8 +48,11 @@ export function subscribeSound(listener: () => void): () => void {
   return () => listeners.delete(listener);
 }
 
-/** Created lazily inside a user gesture (a guess), which browsers require. */
-function audio(): AudioContext | null {
+/**
+ * The page's shared AudioContext (also used by lib/music.ts). Created lazily
+ * inside a user gesture (a guess or a click), which browsers require.
+ */
+export function audioContext(): AudioContext | null {
   if (typeof window === 'undefined') return null;
   const Ctor = window.AudioContext ?? (window as unknown as { webkitAudioContext?: typeof AudioContext }).webkitAudioContext;
   if (!Ctor) return null;
@@ -53,12 +62,19 @@ function audio(): AudioContext | null {
 }
 
 /** A bell-like tone: a sine with a quieter octave overtone and a fast decay. */
-function bell(ctx: AudioContext, freq: number, start: number, length: number, volume: number) {
+export function bell(
+  ctx: AudioContext,
+  freq: number,
+  start: number,
+  length: number,
+  volume: number,
+  destination: AudioNode = ctx.destination
+) {
   const out = ctx.createGain();
   out.gain.setValueAtTime(0.0001, start);
   out.gain.exponentialRampToValueAtTime(volume, start + 0.01);
   out.gain.exponentialRampToValueAtTime(0.0001, start + length);
-  out.connect(ctx.destination);
+  out.connect(destination);
   for (const [mult, level] of [[1, 1], [2, 0.25]] as const) {
     const osc = ctx.createOscillator();
     const g = ctx.createGain();
@@ -93,14 +109,63 @@ function buzz(ctx: AudioContext, start: number, length: number, volume: number) 
   }
 }
 
+/** A hollow, woody "bone" note: a sine plus a fast-fading inharmonic overtone. */
+function xylo(ctx: AudioContext, freq: number, start: number, volume: number) {
+  for (const [mult, level, length] of [[1, 1, 0.35], [3.9, 0.5, 0.08]] as const) {
+    const osc = ctx.createOscillator();
+    const g = ctx.createGain();
+    osc.type = 'sine';
+    osc.frequency.value = freq * mult;
+    g.gain.setValueAtTime(0.0001, start);
+    g.gain.exponentialRampToValueAtTime(volume * level, start + 0.004);
+    g.gain.exponentialRampToValueAtTime(0.0001, start + length);
+    osc.connect(g).connect(ctx.destination);
+    osc.start(start);
+    osc.stop(start + length + 0.05);
+  }
+}
+
+/** A ghostly "wooOOooo": a wobbling sine that swells and slides down. */
+function ghost(ctx: AudioContext, start: number, length: number, volume: number) {
+  const osc = ctx.createOscillator();
+  const wobble = ctx.createOscillator();
+  const depth = ctx.createGain();
+  const out = ctx.createGain();
+  osc.type = 'sine';
+  osc.frequency.setValueAtTime(520, start);
+  osc.frequency.linearRampToValueAtTime(640, start + length * 0.3);
+  osc.frequency.exponentialRampToValueAtTime(220, start + length);
+  wobble.frequency.value = 6;
+  depth.gain.value = 14;
+  wobble.connect(depth).connect(osc.frequency);
+  out.gain.setValueAtTime(0.0001, start);
+  out.gain.exponentialRampToValueAtTime(volume, start + length * 0.3);
+  out.gain.exponentialRampToValueAtTime(0.0001, start + length);
+  osc.connect(out).connect(ctx.destination);
+  for (const o of [osc, wobble]) {
+    o.start(start);
+    o.stop(start + length + 0.05);
+  }
+}
+
 /** Plays the sound for a graded guess, unless sound is off. */
 export function playGuessSound(result: GuessResult): void {
   if (!isSoundEnabled()) return;
   try {
-    const ctx = audio();
+    const ctx = audioContext();
     if (!ctx) return;
     const now = ctx.currentTime + 0.01;
-    if (result === 'correct') {
+    if (isHalloweenSeason(new Date())) {
+      if (result === 'correct') {
+        // A, C, E, A, then a final high E: a skeleton running up its ribs.
+        [440, 523.3, 659.3, 880, 1318.5].forEach((f, i) => xylo(ctx, f, now + i * 0.075, i === 4 ? 0.3 : 0.24));
+      } else if (result === 'partial') {
+        xylo(ctx, 587.3, now, 0.24);
+        xylo(ctx, 587.3, now + 0.11, 0.2);
+      } else {
+        ghost(ctx, now, 0.9, 0.16);
+      }
+    } else if (result === 'correct') {
       bell(ctx, 1318.5, now, 0.45, 0.22); // E6 "ping"
       bell(ctx, 1046.5, now + 0.17, 0.8, 0.22); // C6 "pong"
     } else if (result === 'partial') {

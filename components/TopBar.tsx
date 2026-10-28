@@ -6,7 +6,7 @@ import { BarChart3, Info, Archive, Menu, Download, ClipboardList, CalendarDays }
 import GlassIconButton from './ui/GlassIconButton';
 import AccentButton from './ui/AccentButton';
 import SoundToggle from './ui/SoundToggle';
-import { HangingSkeleton, SkullMark, useHalloween } from './ui/Halloween';
+import { HangingSkeleton, MusicToggle, SkullMark, useHalloween } from './ui/Halloween';
 
 /**
  * Top navigation bar — a flat header strip like a RIS/PACS worklist header.
@@ -15,12 +15,14 @@ import { HangingSkeleton, SkullMark, useHalloween } from './ui/Halloween';
  * (matching the app's dual-layout convention so the `:visible` e2e selectors
  * keep working):
  *   - Desktop (>= sm): wordmark on the left; Daily / Archive / Stats / About
- *     text links, the sound toggle and the primary Game Session button on the right.
+ *     links (icon-only below lg), the sound toggle and the primary Game Session
+ *     button on the right.
  *   - Mobile (< sm): wordmark, Game Session button, sound toggle (from 360px), and a
  *     menu with the rest, including the sound toggle.
  *
- * From October 15 to November 1 the wordmark's crosshair becomes a skull and a
- * small skeleton hangs from the desktop bar (see ./ui/Halloween).
+ * From October 15 to November 1 the wordmark's crosshair becomes a skull, a
+ * small skeleton hangs from the desktop bar, and a music toggle (desktop bar and
+ * mobile menu) plays an optional spooky tune (see ./ui/Halloween).
  *
  * `onStats` is optional; pages without the stats modal omit it and the Stats
  * control is hidden. (There is no Feedback button: this fork never writes to
@@ -33,6 +35,9 @@ interface TopBarProps {
 const NAV_LINK =
   'flex items-center gap-1.5 h-9 px-3 text-[13px] font-display font-medium uppercase tracking-[0.06em] ' +
   'text-ink-muted hover:text-ink border border-transparent hover:border-rule transition-colors';
+
+// Nav labels collapse to icons below 1024px so the bar fits small laptop windows.
+const NAV_TEXT = 'hidden lg:inline';
 
 const MENU_ITEM =
   'flex items-center gap-3 w-full px-4 py-3 text-left text-sm font-display font-medium uppercase tracking-[0.06em] ' +
@@ -79,24 +84,25 @@ export default function TopBar({ onStats }: TopBarProps) {
         {halloween && <HangingSkeleton />}
 
         <nav className="flex-1 flex items-center justify-end gap-1">
-          <Link href="/" className={NAV_LINK}>
+          <Link href="/" aria-label="Daily" title="Daily" className={NAV_LINK}>
             <CalendarDays size={15} />
-            Daily
+            <span className={NAV_TEXT}>Daily</span>
           </Link>
-          <Link href="/archive" className={NAV_LINK}>
+          <Link href="/archive" aria-label="Archive" title="Archive" className={NAV_LINK}>
             <Archive size={15} />
-            Archive
+            <span className={NAV_TEXT}>Archive</span>
           </Link>
           {onStats && (
-            <button type="button" onClick={onStats} aria-label="Stats" className={NAV_LINK}>
+            <button type="button" onClick={onStats} aria-label="Stats" title="Stats" className={NAV_LINK}>
               <BarChart3 size={15} />
-              Stats
+              <span className={NAV_TEXT}>Stats</span>
             </button>
           )}
-          <Link href="/about" className={NAV_LINK}>
+          <Link href="/about" aria-label="About" title="About" className={NAV_LINK}>
             <Info size={15} />
-            About
+            <span className={NAV_TEXT}>About</span>
           </Link>
+          {halloween && <MusicToggle className={NAV_LINK} />}
           <SoundToggle className={NAV_LINK} />
           <span className="w-px h-6 bg-rule mx-2" aria-hidden="true" />
           <AccentButton icon={<ClipboardList size={16} />} label="Game Session" href="/session" />
@@ -147,6 +153,7 @@ export default function TopBar({ onStats }: TopBarProps) {
                 About
               </Link>
               <SoundToggle className={MENU_ITEM} withLabel />
+              {halloween && <MusicToggle className={MENU_ITEM} withLabel />}
               <Link href="/install" onClick={() => setMenuOpen(false)} className={MENU_ITEM}>
                 <Download size={16} />
                 Install
