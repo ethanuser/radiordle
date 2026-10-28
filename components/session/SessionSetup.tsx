@@ -251,7 +251,7 @@ export default function SessionSetup() {
           checked={settings.supplemental}
           onChange={(supplemental) => update({ supplemental })}
           label="Include supplemental cases"
-          description="Bundled, openly licensed images (Radiopaedia, Wikimedia Commons) for pneumonia, pleural effusion, empyema and lung abscess."
+          description="Bundled, openly licensed X-ray and CT cases (Radiopaedia, Wikimedia Commons) for pneumonia, pleural effusion, empyema, lung abscess, pulmonary edema and atelectasis."
         />
         <Check
           checked={settings.related}

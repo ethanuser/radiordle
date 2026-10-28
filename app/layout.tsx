@@ -48,7 +48,7 @@ export const metadata: Metadata = {
   icons: {
     icon: [
       { url: withBasePath("/favicon.png"), type: "image/png" },
-      { url: withBasePath("/radle_icon.svg"), type: "image/svg+xml" },
+      { url: withBasePath("/icon.svg"), type: "image/svg+xml" },
     ],
     apple: withBasePath("/apple-touch-icon.png"),
   },
